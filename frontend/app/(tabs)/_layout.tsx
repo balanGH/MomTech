@@ -40,7 +40,7 @@ export default function TabLayout() {
           title: 'Babysitter Verify',
           headerTitle: 'Babysitter Verification',
           tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="check" size={size} color={color} />
+            <MaterialCommunityIcons name="form-select" size={size} color={color} />
           ),
         }}
       />
