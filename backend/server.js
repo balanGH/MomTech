@@ -83,12 +83,8 @@ app.post('/upload', upload.fields([
     const updatedBabysitter = await Babysitter.findOneAndUpdate(
       { email: userEmail },
       { verification: true },
-      { new: true }
+      { new: true, upsert: true }
     );
-
-    if (!updatedBabysitter) {
-      return res.status(404).json({ error: 'Babysitter not found' });
-    }
 
     res.json({ message: '✅ Verification successful!', babysitter: updatedBabysitter });
 
@@ -109,6 +105,22 @@ const extractTextFromPDF = async (filePath) => {
     return '';
   }
 };
+
+// Route to Check Verification Status
+app.get('/check-verification', async (req, res) => {
+  try {
+    const userEmail = req.query.email;
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const babysitter = await Babysitter.findOne({ email: userEmail });
+    res.json({ verified: babysitter?.verification || false });
+  } catch (error) {
+    console.error('❌ Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // Start Server
 app.listen(PORT, () => {
