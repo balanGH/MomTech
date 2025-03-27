@@ -4,7 +4,9 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView, 
-  Alert 
+  Alert, 
+  ActivityIndicator, 
+  Linking
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -15,13 +17,14 @@ export default function BabysitterVerificationScreen() {
   const [documents, setDocuments] = useState({
     babysitting: null,
     firstAid: null,
-    cpr: null,
-    otherDocuments: null,
+    anaphylaxis: null,
+    otherDocuments: null, // Now optional
   });
+  const [loading, setLoading] = useState(false);
 
   const pickDocument = async (type) => {
     let result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
-    console.log("Selected document:", result); // Debugging
+    console.log("Selected document:", result);
 
     if (result.type !== 'cancel' && result.assets && result.assets[0]) {
       const file = result.assets[0];
@@ -40,17 +43,18 @@ export default function BabysitterVerificationScreen() {
     setDocuments({
       babysitting: null,
       firstAid: null,
-      cpr: null,
+      anaphylaxis: null,
       otherDocuments: null,
     });
   };
 
   const uploadDocuments = async () => {
-    if (!documents.babysitting || !documents.firstAid || !documents.cpr || !documents.otherDocuments) {
+    if (!documents.babysitting || !documents.firstAid || !documents.anaphylaxis) {
       Alert.alert('Error', 'Please upload all required certificates.');
       return;
     }
 
+    setLoading(true);
     const formData = new FormData();
     Object.keys(documents).forEach((key) => {
       if (documents[key]) {
@@ -63,7 +67,7 @@ export default function BabysitterVerificationScreen() {
     });
 
     try {
-      const response = await fetch('http://192.168.1.100:5000/upload', { // Replace with your local IP
+      const response = await fetch('http://192.168.137.116:5000/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -72,31 +76,30 @@ export default function BabysitterVerificationScreen() {
       });
 
       if (response.ok) {
-        Alert.alert('Success', 'Documents uploaded successfully!');
+        Alert.alert('Success', 'Successfully uploaded!');
+        clearAllDocuments();
       } else {
         Alert.alert('Error', 'Failed to upload documents.');
       }
     } catch (error) {
       Alert.alert('Error', 'An error occurred while uploading documents.');
       console.error('Upload error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Babysitter Verification</Text>
-      <Text style={styles.subHeader}>Upload your certificates for verification.{"\n"}Complete the steps below.
-      </Text>
-
+      <Text style={styles.subHeader}>Upload your certificates for verification.{'\n'}Complete the steps below.</Text>
 
       <Text style={styles.progressText}>
-        {`Progress: ${
-          Object.values(documents).filter((doc) => doc).length
-        }/4 certificates uploaded`}
+        {`Progress: ${Object.values(documents).filter((doc) => doc).length}/3 required certificates uploaded`}
       </Text>
 
       <View style={styles.uploadSection}>
-        {Object.keys(documents).map((key) => (
+        {['babysitting', 'firstAid', 'anaphylaxis'].map((key) => (
           <View key={key} style={styles.uploadItem}>
             <View style={styles.uploadRow}>
               <Text style={styles.uploadLabel}>
@@ -104,35 +107,41 @@ export default function BabysitterVerificationScreen() {
                   ? 'Babysitting Course' 
                   : key === 'firstAid' 
                   ? 'First Aid' 
-                  : key === 'cpr' 
-                  ? 'CPR' 
-                  : 'Other Documents'} Certificate
+                  : 'Anaphylaxis'} Certificate
               </Text>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={() => pickDocument(key)}
-              >
+              <TouchableOpacity style={styles.uploadButton} onPress={() => pickDocument(key)}>
                 <MaterialCommunityIcons name="file-upload" size={24} color="#7C3AED" />
-                <Text style={styles.uploadText}>
-                  {documents[key] ? 'Replace' : 'Upload'}
-                </Text>
+                <Text style={styles.uploadText}>{documents[key] ? 'Replace' : 'Upload'}</Text>
               </TouchableOpacity>
             </View>
-            {documents[key]?.name && (
-              <Text style={styles.fileName}>
-                {`Uploaded: ${documents[key].name}`}
-              </Text>
-            )}
+            {documents[key]?.name && <Text style={styles.fileName}>{`Uploaded: ${documents[key].name}`}</Text>}
           </View>
         ))}
+
+        {/* Optional document */}
+        <View style={styles.uploadItem}>
+          <View style={styles.uploadRow}>
+            <Text style={styles.uploadLabel}>Other Documents (Optional)</Text>
+            <TouchableOpacity style={styles.uploadButton} onPress={() => pickDocument('otherDocuments')}>
+              <MaterialCommunityIcons name="file-upload" size={24} color="#7C3AED" />
+              <Text style={styles.uploadText}>{documents.otherDocuments ? 'Replace' : 'Upload'}</Text>
+            </TouchableOpacity>
+          </View>
+          {documents.otherDocuments?.name && <Text style={styles.fileName}>{`Uploaded: ${documents.otherDocuments.name}`}</Text>}
+        </View>
       </View>
 
       <TouchableOpacity style={styles.clearButton} onPress={clearAllDocuments}>
         <Text style={styles.clearText}>Clear All</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.submitButton} onPress={uploadDocuments}>
-        <Text style={styles.submitText}>Submit for Verification</Text>
+      <TouchableOpacity style={[styles.submitButton, loading && { opacity: 0.6 }]} onPress={uploadDocuments} disabled={loading}>
+        {loading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.submitText}>Submit for Verification</Text>}
+      </TouchableOpacity>
+
+      {/* Terms and Conditions Link */}
+      <TouchableOpacity onPress={() => Linking.openURL('http://yourtermsandconditions.com')}>
+        <Text style={styles.termsText}>Terms and Conditions Apply</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -211,6 +220,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  termsText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#7C3AED',
+    marginTop: 16,
+    textDecorationLine: 'underline',
+  },
   clearText: {
     color: '#fff',
     fontSize: 16,
@@ -221,6 +237,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   submitText: {
     color: '#fff',
@@ -228,3 +246,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

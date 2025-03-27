@@ -1,0 +1,21 @@
+const mongoose = require("mongoose");
+
+const BabysitterSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String,
+  role: { type: String, default: "babySitter" },
+  phone: String,
+  address: {
+    street: String,
+    city: String,
+    dist: String,
+    state: String,
+    country: String,
+  },
+  profile_picture: String,
+  created_at: { type: Date, default: Date.now },
+  verification: { type: Boolean, default: false },
+});
+
+module.exports = mongoose.model("Babysitter", BabysitterSchema);
