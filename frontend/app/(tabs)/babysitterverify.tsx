@@ -6,7 +6,7 @@ import {
   ScrollView, 
   Alert, 
   ActivityIndicator, 
-  Linking
+  Linking 
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -18,10 +18,15 @@ export default function BabysitterVerificationScreen() {
     babysitting: null,
     firstAid: null,
     anaphylaxis: null,
-    otherDocuments: null, // Now optional
+    otherDocuments: null, // Optional
   });
   const [loading, setLoading] = useState(false);
 
+  // User email (Replace this with actual authentication-based email retrieval)
+  const user_mailid = "sara@momtech.in";
+  console.log("user_mailid", user_mailid);
+
+  // Function to pick a document
   const pickDocument = async (type) => {
     let result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
     console.log("Selected document:", result);
@@ -29,6 +34,7 @@ export default function BabysitterVerificationScreen() {
     if (result.type !== 'cancel' && result.assets && result.assets[0]) {
       const file = result.assets[0];
       const uri = file.uri.startsWith("file://") ? file.uri : FileSystem.documentDirectory + file.name;
+
       setDocuments((prev) => ({
         ...prev,
         [type]: {
@@ -39,6 +45,7 @@ export default function BabysitterVerificationScreen() {
     }
   };
 
+  // Function to clear all documents
   const clearAllDocuments = () => {
     setDocuments({
       babysitting: null,
@@ -48,38 +55,48 @@ export default function BabysitterVerificationScreen() {
     });
   };
 
+  // Function to upload documents
   const uploadDocuments = async () => {
     if (!documents.babysitting || !documents.firstAid || !documents.anaphylaxis) {
       Alert.alert('Error', 'Please upload all required certificates.');
       return;
     }
-
+  
     setLoading(true);
     const formData = new FormData();
+  
     Object.keys(documents).forEach((key) => {
       if (documents[key]) {
+        const originalName = documents[key].name;
+        const extension = originalName.split('.').pop();
+        const formattedName = `${user_mailid.replace(/[@.]/g, '')}_${key}.${extension}`;
+  
         formData.append(key, {
           uri: documents[key].uri,
           type: 'application/pdf',
-          name: documents[key].name,
+          name: formattedName,
         });
       }
     });
-
+  
+    // Add User Email for Backend Verification
+    formData.append('email', user_mailid);
+  
     try {
-      const response = await fetch('http://192.168.137.116:5000/upload', {
+      const response = await fetch('http://192.168.137.97:5000/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         body: formData,
       });
-
+  
+      const result = await response.json();
       if (response.ok) {
         Alert.alert('Success', 'Successfully uploaded!');
         clearAllDocuments();
       } else {
-        Alert.alert('Error', 'Failed to upload documents.');
+        Alert.alert('Error', result.error || 'Failed to upload documents.');
       }
     } catch (error) {
       Alert.alert('Error', 'An error occurred while uploading documents.');
@@ -88,11 +105,14 @@ export default function BabysitterVerificationScreen() {
       setLoading(false);
     }
   };
+  
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Babysitter Verification</Text>
-      <Text style={styles.subHeader}>Upload your certificates for verification.{'\n'}Complete the steps below.</Text>
+      <Text style={styles.subHeader}>
+        Upload your certificates for verification.{'\n'}Complete the steps below.
+      </Text>
 
       <Text style={styles.progressText}>
         {`Progress: ${Object.values(documents).filter((doc) => doc).length}/3 required certificates uploaded`}
@@ -135,7 +155,11 @@ export default function BabysitterVerificationScreen() {
         <Text style={styles.clearText}>Clear All</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.submitButton, loading && { opacity: 0.6 }]} onPress={uploadDocuments} disabled={loading}>
+      <TouchableOpacity 
+        style={[styles.submitButton, loading && { opacity: 0.6 }]} 
+        onPress={uploadDocuments} 
+        disabled={loading}
+      >
         {loading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.submitText}>Submit for Verification</Text>}
       </TouchableOpacity>
 
@@ -246,4 +270,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

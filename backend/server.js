@@ -1,99 +1,116 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const { createWorker } = require('tesseract.js');
-const path = require('path');
-const fs = require('fs');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const pdfParse = require('pdf-parse');
+const Babysitter = require('./models/Babysitter');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
+// Database Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// Enable CORS
 app.use(cors());
 
-mongoose.connect('mongodb://localhost:27017/momtech', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const babysitterSchema = new mongoose.Schema({
-  name: String,
-  documents: {
-    babysitting: String,
-    firstAid: String,
-    anaphylaxis: String,
-    otherDocuments: String,
-  },
-  verified: { type: Boolean, default: false },
-});
-
-const Babysitter = mongoose.model('Babysitter', babysitterSchema);
-
+// Multer Storage Configuration (Save Files Temporarily)
 const storage = multer.diskStorage({
   destination: './uploads/',
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  },
+    cb(null, file.originalname);
+  }
 });
+const upload = multer({ storage });
 
-const upload = multer({ storage: storage });
-
+// Upload Route (Handles Multiple Documents)
 app.post('/upload', upload.fields([
-  { name: 'babysitting' },
-  { name: 'firstAid' },
-  { name: 'anaphylaxis' },
-  { name: 'otherDocuments' },
+  { name: 'babysitting', maxCount: 1 },
+  { name: 'firstAid', maxCount: 1 },
+  { name: 'anaphylaxis', maxCount: 1 },
+  { name: 'otherDocuments', maxCount: 1 } // Optional document
 ]), async (req, res) => {
   try {
-    const { name } = req.body;
-    const files = req.files;
-    
-    if (!files || !name) {
-      return res.status(400).json({ error: 'Missing files or name' });
+    console.log('📂 Files Received:', req.files);
+
+    // Ensure Email Exists in Request
+    const userEmail = req.body.email;
+    console.log("📧 User Email:", userEmail);
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Email is required' });
     }
 
-    let verified = await verifyDocuments(files, name);
-    
-    const babysitter = new Babysitter({
-      name,
-      documents: {
-        babysitting: files.babysitting ? files.babysitting[0].path : '',
-        firstAid: files.firstAid ? files.firstAid[0].path : '',
-        anaphylaxis: files.anaphylaxis ? files.anaphylaxis[0].path : '',
-        otherDocuments: files.otherDocuments ? files.otherDocuments[0].path : '',
-      },
-      verified,
-    });
+    // Required Documents and Expected Keywords
+    const requiredDocs = {
+      babysitting: 'babysitting certificate',
+      firstAid: 'first aid certificate',
+      anaphylaxis: 'anaphylaxis certificate'
+    };
 
-    await babysitter.save();
-    res.json({ message: 'Documents uploaded successfully', verified });
+    // Validate Required Documents
+    for (let docType in requiredDocs) {
+      if (!req.files[docType]) {
+        return res.status(400).json({ error: `${docType} document is required` });
+      }
+
+      const filePath = path.join(__dirname, 'uploads', req.files[docType][0].filename);
+      const extractedText = await extractTextFromPDF(filePath);
+      console.log(`📄 Extracted Text from ${docType}:`, extractedText);
+
+      // Check if expected keyword is in document
+      if (!extractedText.toLowerCase().includes(requiredDocs[docType])) {
+        return res.status(400).json({ error: `Invalid ${docType} document` });
+      }
+
+      // Cleanup Uploaded File
+      fs.unlinkSync(filePath);
+    }
+
+    // ✅ Optional `otherDocuments` Validation (If Uploaded)
+    if (req.files.otherDocuments) {
+      const filePath = path.join(__dirname, 'uploads', req.files.otherDocuments[0].filename);
+      const extractedText = await extractTextFromPDF(filePath);
+      console.log(`📄 Extracted Text from otherDocuments:`, extractedText);
+      fs.unlinkSync(filePath); // Clean up after processing
+    }
+
+    // ✅ If all required documents are valid, update MongoDB
+    const updatedBabysitter = await Babysitter.findOneAndUpdate(
+      { email: userEmail },
+      { verification: true },
+      { new: true }
+    );
+
+    if (!updatedBabysitter) {
+      return res.status(404).json({ error: 'Babysitter not found' });
+    }
+
+    res.json({ message: '✅ Verification successful!', babysitter: updatedBabysitter });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('❌ Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-async function verifyDocuments(files, expectedName) {
-  const worker = createWorker();
-  await worker.load();
-  await worker.loadLanguage('eng');
-  await worker.initialize('eng');
-
-  for (const key in files) {
-    if (files[key]) {
-      const filePath = files[key][0].path;
-      const { data: { text } } = await worker.recognize(filePath);
-      if (!text.includes(expectedName)) {
-        await worker.terminate();
-        return false;
-      }
-    }
+// Function to Extract Text from PDF
+const extractTextFromPDF = async (filePath) => {
+  try {
+    const dataBuffer = fs.readFileSync(filePath);
+    const data = await pdfParse(dataBuffer);
+    return data.text; // Extracted text from PDF
+  } catch (error) {
+    console.error('⚠️ PDF Parsing Error:', error);
+    return '';
   }
-  await worker.terminate();
-  return true;
-}
+};
 
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

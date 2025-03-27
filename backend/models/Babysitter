@@ -1,21 +1,21 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const BabysitterSchema = new mongoose.Schema({
   name: String,
-  email: String,
+  email: { type: String, unique: true },
   password: String,
-  role: { type: String, default: "babySitter" },
+  role: String,
   phone: String,
   address: {
     street: String,
     city: String,
     dist: String,
     state: String,
-    country: String,
+    country: String
   },
   profile_picture: String,
   created_at: { type: Date, default: Date.now },
-  verification: { type: Boolean, default: false },
+  verification: { type: Boolean, default: false }
 });
 
-module.exports = mongoose.model("Babysitter", BabysitterSchema);
+module.exports = mongoose.model('Babysitter', BabysitterSchema);
