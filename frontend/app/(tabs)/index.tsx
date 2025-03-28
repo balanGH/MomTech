@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
@@ -23,11 +23,22 @@ export default function HomeScreen() {
           <Text style={styles.actionText}>Sleep Log</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionCard}>
-          <MaterialCommunityIcons name="calendar-check" size={32} color="#7C3AED" />
+          <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.actionCard}>
+          <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
+          <Text style={styles.actionText}>Nutrients Track</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionCard}>
+          <MaterialCommunityIcons name="bell" size={32} color="#7C3AED" />
+          <Text style={styles.actionText}>Reminders</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard}>
+          <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#7C3AED" />
+          <Text style={styles.actionText}>Chat with AI</Text>
+        </TouchableOpacity>
       </View>
-
       <View style={styles.aiSection}>
         <Text style={styles.sectionTitle}>AI Insights</Text>
         <View style={styles.insightCard}>
@@ -55,39 +66,51 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F9FAFB', // Light neutral background
   },
   welcomeSection: {
     padding: 20,
     backgroundColor: '#fff',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   headerImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 10,
+    height: 180,
+    borderRadius: 12,
     marginBottom: 16,
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#1F2937',
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#6B7280',
     marginTop: 4,
+    textAlign: 'center',
   },
   quickActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    padding: 20,
+    padding: 16,
   },
   actionCard: {
     backgroundColor: '#fff',
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     alignItems: 'center',
-    width: '30%',
+    justifyContent: 'center',
+    width: '30%', // Adjusted to fit three in a row
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -96,8 +119,9 @@ const styles = StyleSheet.create({
   },
   actionText: {
     marginTop: 8,
-    fontSize: 14,
-    color: '#4B5563',
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
     textAlign: 'center',
   },
   aiSection: {
@@ -108,6 +132,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
     marginBottom: 12,
+    textAlign: 'center',
   },
   insightCard: {
     backgroundColor: '#fff',
