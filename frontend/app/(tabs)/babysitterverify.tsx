@@ -14,7 +14,7 @@ export default function BabysitterVerificationScreen() {
   const [loading, setLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false); // Verification status
 
-  const user_mailid = "sara@momtech.in";
+  const user_email = "sara@momtech.in";
 
   // Check verification status on mount
   useEffect(() => {
@@ -23,7 +23,8 @@ export default function BabysitterVerificationScreen() {
 
   const checkVerificationStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.137.97:5000/check-verification?email=${user_mailid}`);
+      const response = await fetch(`http://192.168.137.97:5000/check-verification?email=${user_email}`);
+      console.log('Response:', response);
       const result = await response.json();
       if (response.ok && result.verified) {
         setIsVerified(true);
@@ -73,7 +74,7 @@ export default function BabysitterVerificationScreen() {
       if (documents[key]) {
         const originalName = documents[key].name;
         const extension = originalName.split('.').pop();
-        const formattedName = `${user_mailid.replace(/[@.]/g, '')}_${key}.${extension}`;
+        const formattedName = `${user_email.replace(/[@.]/g, '')}_${key}.${extension}`;
 
         formData.append(key, {
           uri: documents[key].uri,
@@ -83,7 +84,7 @@ export default function BabysitterVerificationScreen() {
       }
     });
 
-    formData.append('email', user_mailid);
+    formData.append('email', user_email);
 
     try {
       const response = await fetch('http://192.168.137.97:5000/upload', {

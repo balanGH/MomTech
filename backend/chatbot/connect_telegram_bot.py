@@ -4,12 +4,21 @@ import pandas as pd
 import spacy
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import os
+from dotenv import load_dotenv
+from pathlib import Path  # Import Path to construct absolute paths
 
+# Construct the absolute path to the .env file
+BASE_DIR = Path(__file__).resolve().parent  # Gets chatbot directory
+dotenv_path = BASE_DIR / ".env"  # Path to .env file
+
+# Load environment variables from .env file
+load_dotenv(dotenv_path=dotenv_path)
 # Load spaCy model for sentence embeddings
 nlp = spacy.load("en_core_web_md")
 
 # Your Telegram Bot Token
-TOKEN = ""  # Replace with your actual bot token
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # Load dataset (Ensure the CSV file is in the same directory)
 df = pd.read_csv("momtech_questions.csv")
