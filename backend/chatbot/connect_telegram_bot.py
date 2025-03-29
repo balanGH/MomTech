@@ -9,7 +9,7 @@ import numpy as np
 nlp = spacy.load("en_core_web_md")
 
 # Your Telegram Bot Token
-TOKEN = "7561134400:AAGTq3T68q7B-eBZ7cZGjieFKl7uuwwkAP4"  # Replace with your actual bot token
+TOKEN = ""  # Replace with your actual bot token
 
 # Load dataset (Ensure the CSV file is in the same directory)
 df = pd.read_csv("momtech_questions.csv")
