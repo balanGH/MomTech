@@ -1,7 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
+  const navigation = useNavigation(); // ✅ Move useNavigation inside the component
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -26,7 +29,10 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
+        <TouchableOpacity 
+          style={styles.actionCard} 
+          onPress={() => navigation.navigate('nutrienttracker')} // ✅ Now navigation will work
+        >
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -39,29 +45,10 @@ export default function HomeScreen() {
           <Text style={styles.actionText}>Chat with AI</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.aiSection}>
-        <Text style={styles.sectionTitle}>AI Insights</Text>
-        <View style={styles.insightCard}>
-          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
-          <Text style={styles.insightText}>
-            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.upcomingSection}>
-        <Text style={styles.sectionTitle}>Upcoming</Text>
-        <View style={styles.eventCard}>
-          <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
-          <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle}>Vaccination Due</Text>
-            <Text style={styles.eventTime}>Tomorrow at 10:00 AM</Text>
-          </View>
-        </View>
-      </View>
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
