@@ -1,5 +1,9 @@
+import { useRouter } from 'expo-router';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, SafeAreaView } from 'react-native';
+import { Alert } from 'react-native';
 
 const App = () => {
   const [selectedMode, setSelectedMode] = useState(null);
@@ -30,8 +34,68 @@ const App = () => {
     setFormData({...formData, [name]: value});
   };
 
-  const handleAuthAction = () => {
-    alert(`${isLogin ? 'Login' : 'Signup'} successful as ${selectedMode}`);
+//   const handleAuthAction = () => {
+//     alert(`${isLogin ? 'Login' : 'Signup'} successful as ${selectedMode}`);
+//   };
+// Add these imports
+
+
+// Update handleAuthAction
+// const handleAuthAction = async () => {
+//   try {
+//     const url = isLogin 
+//       ? 'http://10.16.64.177:5000/auth/login'
+//       : `http://10.16.64.177:5000/auth/register/${selectedMode}`;
+
+//     const response = await axios.post(url, {
+//       ...formData,
+//       userType: selectedMode
+//     });
+
+//     if (isLogin) {
+//       await AsyncStorage.setItem('token', response.data.token);
+//       router.replace('/(tabs)/');
+//     } else {
+//       Alert.alert('Success', 'Check your email for verification');
+//       setIsLogin(true);
+//     }
+//   } catch (error) {
+//     Alert.alert('Error', error.response?.data?.error || 'Something went wrong');
+//   }
+// };
+const handleAuthAction = async () => {
+    try {
+      // Input validation
+      if (!formData.email || !formData.password) {
+        Alert.alert('Error', 'Please fill all required fields');
+        return;
+      }
+  
+      const url = isLogin 
+        ? 'http://10.16.64.177:5000/auth/login' 
+        : 'http://10.16.64.177:5000/auth/register/mom';
+  
+      const response = await axios.post(url, {
+        ...formData,
+        userType: selectedMode
+      });
+  
+      if (isLogin) {
+        await AsyncStorage.setItem('token', response.data.token);
+        router.replace('/(tabs)/');
+      } else {
+        Alert.alert(
+          'Success', 
+          'Account created! Check your email for verification'
+        );
+        setIsLogin(true); // Switch back to login after signup
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error', 
+        error.response?.data?.error || 'Something went wrong'
+      );
+    }
   };
 
   const toggleAuthMode = () => {

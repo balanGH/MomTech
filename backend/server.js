@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 
 const uploadRoutes = require('./routes/uploadRoutes');
 const babysitterRoutes = require('./routes/babysitterRoutes');
+const authRoutes = require('./routes/authRoutes'); // New
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,8 +18,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/auth', authRoutes); // New auth routes
 app.use('/upload', uploadRoutes);
-app.use('/', babysitterRoutes);
+app.use('/babysitters', babysitterRoutes);
 
 // Start Server
 app.listen(PORT, () => {
