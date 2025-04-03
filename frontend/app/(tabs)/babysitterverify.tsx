@@ -184,7 +184,7 @@ export default function BabysitterVerificationScreen() {
           </Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => Linking.openURL('https://github.com/balanGH/MomTech/blob/cadb411590830c8069ec828538a61d2dca568f67/T%26A.md')}>
+      <TouchableOpacity onPress={() => Linking.openURL('https://github.com/balanGH/MomTech/blob/d026784b005341949e7c5012fefda2271a84166f/T%26C.md')}>
         <Text style={styles.termsText}>Terms and Conditions Apply</Text>
       </TouchableOpacity>
     </ScrollView>
