@@ -1,0 +1,53 @@
+C:\Users\balan\Documents\GitHub\MomTech\frontend>tree/f
+Folder PATH listing
+Volume serial number is F67D-F4AB
+C:.
+│   .gitignore
+│   app.json
+│   eas.json
+│   expo-env.d.ts
+│   files
+│   package-lock.json
+│   package.json
+│   tsconfig.json
+│
+├───.expo
+│   │   devices.json
+│   │   README.md
+│   │
+│   ├───types
+│   │       router.d.ts
+│   │
+│   └───web
+│       └───cache
+│           └───production
+│               └───images
+│                   └───favicon
+│                       └───favicon-5ec17f04675f98fe7d035b48ee86ae764986cf853ba04529096de6d7db658aba-contain-transparent
+│                               favicon-48.png
+│
+├───app
+│   │   +not-found.tsx
+│   │   nutrienttracker.tsx
+│   │   _layout.tsx
+│   │
+│   └───(tabs)
+│           auth.tsx
+│           babysitters.tsx
+│           babysitterverify.tsx
+│           health.tsx
+│           index.tsx
+│           profile.tsx
+│           schedule.tsx
+│           _layout.tsx
+│
+└───assets
+    └───images
+            babysitter-icon.png
+            favicon.png
+            icon.png
+            mom-heart.png
+            mom-icon.png
+            mom-love.png
+
+C:\Users\balan\Documents\GitHub\MomTech\frontend>
