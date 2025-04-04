@@ -1,0 +1,81 @@
+[{
+  "_id": {
+    "$oid": "67efcd112a2c42502befd3fb"
+  },
+  "name": "sara",
+  "email": "sara@momtech.in",
+  "password": "$2b$10$hhaoKUUqwXJm4ODqvge.neXnKgWND48R0gr12b1zuEJESDFm.hO0m",
+  "phone": "9874563210",
+  "verification": false,
+  "verificationToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhcmFAbW9tdGVjaC5pbiIsImlhdCI6MTc0Mzc2ODg0OX0.oaLkGUNm2HmpqmFQ9INdDb7RXXw2QrIermvuh9Tvf4g",
+  "children": [],
+  "createdAt": {
+    "$date": "2025-04-04T12:14:09.142Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67efcf6f2a2c42502befd408"
+  },
+  "name": "enma",
+  "email": "enma@momtech.in",
+  "password": "$2b$10$tC7lz8tBWtZyPxltZ9pSWO.KYeqkPp7I0MOtwehaU1QTHvEbg9FmS",
+  "phone": "9874563210",
+  "verification": false,
+  "verificationToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVubWFAbW9tdGVjaC5pbiIsImlhdCI6MTc0Mzc2OTQ1NX0.JCUiogOkN8Xo4fBG1Hmb7wC-XQ-4lBbV0vRP7s-wPqk",
+  "children": [],
+  "createdAt": {
+    "$date": "2025-04-04T12:24:15.829Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67efddd8252e294502c2ba7f"
+  },
+  "name": "Mom Tech",
+  "email": "mom@momtech.in",
+  "password": "$2b$10$hhaoKUUqwXJm4ODqvge.neXnKgWND48R0gr12b1zuEJESDFm.hO0m",
+  "role": "Riya",
+  "phone": "9876543210",
+  "address": {
+    "street": "123 Tech Street",
+    "city": "Guindy",
+    "dist": "Chennai",
+    "state": "Tamil Nadu",
+    "country": "India"
+  },
+  "child": {
+    "name": "Child",
+    "age": {
+      "$date": "2018-06-01T00:00:00.000Z"
+    },
+    "healthoverview": [
+      {
+        "date": {
+          "$date": "2025-04-01T00:00:00.000Z"
+        },
+        "weight": 18.5,
+        "height": 95,
+        "temperature": 36
+      },
+      {
+        "weight": "5",
+        "height": "60",
+        "temparature": "35",
+        "date": "2025-03-026T00:00:00.000+00:00"
+      }
+    ],
+    "medicalcondition": {
+      "allergy": [
+        "peanut",
+        "soya"
+      ]
+    }
+  },
+  "profile_picture": "https://th.bing.com/th/id/OIP.4XGHVYenEBOLYKkBMi83dgHaEu?w=264&h=180&c=7&r=0&o=5&pid=1.7",
+  "created_at": {
+    "$date": "2025-04-04T18:53:00.000Z"
+  }
+}]
