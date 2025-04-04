@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, SafeAreaView } from 'react-native';
 import { Alert } from 'react-native';
 
-const App = () => {
+const Auth = () => {
   const [selectedMode, setSelectedMode] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -44,8 +44,8 @@ const App = () => {
 // const handleAuthAction = async () => {
 //   try {
 //     const url = isLogin 
-//       ? 'http://10.16.64.177:5000/auth/login'
-//       : `http://10.16.64.177:5000/auth/register/${selectedMode}`;
+//       ? 'http://10.5.183.238:5000/auth/login'
+//       : `http://10.5.183.238:5000/auth/register/${selectedMode}`;
 
 //     const response = await axios.post(url, {
 //       ...formData,
@@ -72,13 +72,15 @@ const handleAuthAction = async () => {
       }
   
       const url = isLogin 
-        ? 'http://10.16.64.177:5000/auth/login' 
-        : 'http://10.16.64.177:5000/auth/register/mom';
+        ? 'http://10.5.183.238:5000/auth/login' 
+        : 'http://10.5.183.238:5000/auth/register/mom';
   
       const response = await axios.post(url, {
         ...formData,
         userType: selectedMode
       });
+      console.log(response);
+      Alert.alert(response);
   
       if (isLogin) {
         await AsyncStorage.setItem('token', response.data.token);
@@ -332,4 +334,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default Auth;

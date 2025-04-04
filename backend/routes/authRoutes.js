@@ -10,6 +10,13 @@ const { sendVerificationEmail } = require('../utils/authUtils');
 router.post('/register/mom', async (req, res) => {
   try {
     const { email, password, name, phone } = req.body;
+
+    // Check if the email already exists
+    const existingMom = await Mom.findOne({ email });
+    if (existingMom) {
+      throw new Error('Email is already registered');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET);
     
@@ -22,19 +29,20 @@ router.post('/register/mom', async (req, res) => {
     });
 
     await mom.save();
-    await sendVerificationEmail(email, verificationToken);
-    
+  //await sendVerificationEmail(email, verificationToken);
     res.status(201).json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
+
 // Login
 router.post('/login', async (req, res) => {
   try {
     const { email, password, userType } = req.body;
     const Model = userType === 'mom' ? Mom : Babysitter;
+
     const user = await Model.findOne({ email });
 
     if (!user) throw new Error('User not found');

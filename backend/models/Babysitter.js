@@ -4,6 +4,7 @@ const BabysitterSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
+  fare: { type: Number, required: true },
   role: String,
   phone: String,
   address: {
