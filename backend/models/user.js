@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   child: childSchema,
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  role: { type: String, required: true },
+  role:"mom",
   phone: { type: String },
   address: {
     street: { type: String },

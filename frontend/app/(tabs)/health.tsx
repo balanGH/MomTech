@@ -1,7 +1,20 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+
 export default function HealthScreen() {
+  const user_email = "mom@momtech.in";
+
+  const healthoverview = async () => {
+    try {
+      const response = await fetch(`http://10.5.183.238:5000/mom/child?email=${user_email}`);
+      console.log('Response:', response);
+      const result = await response.json();
+      
+    } catch (error) {
+      console.error('Error fetching child healthoverview:', error);
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>

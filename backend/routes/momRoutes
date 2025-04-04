@@ -1,0 +1,32 @@
+const express = require('express');
+const Mom = require('../models/Mom');
+
+const router = express.Router();
+
+// Check Mom child healthoverview
+router.get('/child', async (req, res) => {
+  try {
+    const userEmail = req.query.email;
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const mom = await Mom.findOne({ email: userEmail });
+    if (!mom) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Ensure that child and healthoverview exist before accessing
+    const healthOverview = mom.child?.healthoverview || [];
+    if (healthOverview.length === 0) {
+      return res.json({ healthoverview: [] });
+    }
+
+    res.json({ healthoverview: healthOverview });
+  } catch (error) {
+    console.error('❌ Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+module.exports = router;

@@ -3,9 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+const authRoutes = require('./routes/authRoutes');
+const momRoutes = require('./routes/momRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const babysitterRoutes = require('./routes/babysitterRoutes');
-const authRoutes = require('./routes/authRoutes'); // New
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes); // New auth routes
+app.use('/mom',momRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/babysitters', babysitterRoutes);
 

@@ -29,7 +29,7 @@ router.post('/register/mom', async (req, res) => {
     });
 
     await mom.save();
-  //await sendVerificationEmail(email, verificationToken);
+    //await sendVerificationEmail(email, verificationToken);
     res.status(201).json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
