@@ -15,6 +15,7 @@ const BabysitterSchema = new mongoose.Schema({
     country: String
   },
   profile_picture: String,
+  rating: { type: String, default: "0" },
   created_at: { type: Date, default: Date.now },
   verification: { type: Boolean, default: false }
 });

@@ -23,7 +23,7 @@ export default function BabysitterVerificationScreen() {
 
   const checkVerificationStatus = async () => {
     try {
-      const response = await fetch(`http://10.21.76.182:5000/check-verification?email=${user_email}`);
+      const response = await fetch(`http://10.11.158.107:5000/check-verification?email=${user_email}`);
       console.log('Response:', response);
       const result = await response.json();
       if (response.ok && result.verified) {
@@ -87,7 +87,7 @@ export default function BabysitterVerificationScreen() {
     formData.append('email', user_email);
 
     try {
-      const response = await fetch('http://10.21.76.182:5000/upload', {
+      const response = await fetch('http://10.11.158.107:5000/upload', {
         method: 'POST',
         body: formData, // No need to set multipart headers manually
       });

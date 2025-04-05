@@ -10,7 +10,7 @@ export default function HealthScreen() {
 
   const fetchChildDetails = async () => {
     try {
-      const response = await fetch(`http://10.21.76.182:5000/mom/child?email=${user_email}`);
+      const response = await fetch(`http://10.11.158.107:5000/mom/child?email=${user_email}`);
       const result = await response.json();
 
       if (result.child) {
