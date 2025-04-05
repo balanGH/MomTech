@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TextInput, Button, Alert, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 
@@ -7,10 +7,14 @@ export default function HealthScreen() {
   const user_email = 'mom@momtech.in';
   const [healthOverview, setHealthOverview] = useState([]);
   const [healthConditions, setHealthConditions] = useState([]);
+  const [newWeight, setNewWeight] = useState('');
+  const [newHeight, setNewHeight] = useState('');
+  const [newTemperature, setNewTemperature] = useState('');
+  const [showForm, setShowForm] = useState(false); // State to toggle the form visibility
 
   const fetchChildDetails = async () => {
     try {
-      const response = await fetch(`http://10.11.158.107:5000/mom/child?email=${user_email}`);
+      const response = await fetch(`http://10.11.155.214:5000/mom/child?email=${user_email}`);
       const result = await response.json();
 
       if (result.child) {
@@ -24,6 +28,37 @@ export default function HealthScreen() {
       }
     } catch (error) {
       console.error('Error fetching child details:', error);
+    }
+  };
+
+  const updateHealthOverview = async () => {
+    const newEntry = {
+      date: new Date().toISOString(),
+      weight: newWeight,
+      height: newHeight,
+      temperature: newTemperature,
+    };
+
+    try {
+      const response = await fetch(`http://10.11.155.214:5000/mom/childupdate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user_email, healthoverview: newEntry }),
+      });
+
+      if (response.ok) {
+        setHealthOverview((prev) => [...prev, newEntry].sort((a, b) => new Date(a.date) - new Date(b.date)));
+        Alert.alert('Success', 'Health overview updated successfully!');
+        setNewWeight('');
+        setNewHeight('');
+        setNewTemperature('');
+        setShowForm(false);
+      } else {
+        Alert.alert('Error', 'Failed to update health overview.');
+      }
+    } catch (error) {
+      console.error('Error updating health overview:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
 
@@ -67,7 +102,39 @@ export default function HealthScreen() {
           </View>
         </View>
       </View>
-
+      <View style={styles.section}>
+        {!showForm && (
+          <TouchableOpacity style={styles.updateButton} onPress={() => setShowForm(true)}>
+          <Text style={styles.updateButtonText}>Update Health Overview</Text>
+        </TouchableOpacity>        
+        )}
+          {showForm && (
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Weight (kg)"
+                value={newWeight}
+                onChangeText={setNewWeight}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Height (cm)"
+                value={newHeight}
+                onChangeText={setNewHeight}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Temperature (°C)"
+                value={newTemperature}
+                onChangeText={setNewTemperature}
+                keyboardType="numeric"
+              />
+              <Button title="Submit" onPress={updateHealthOverview} color="#7C3AED" />
+            </View>
+          )}
+      </View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health Conditions</Text>
         {healthConditions.length > 0 ? (
@@ -226,4 +293,41 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 8,
   },
+  updateButton: {
+    backgroundColor: '#7C3AED',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  updateButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },  
+  inputContainer: {
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    elevation: 4,
+  },
+  input: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },   
 });

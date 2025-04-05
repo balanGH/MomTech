@@ -29,10 +29,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.actionCard} 
-          onPress={() => navigation.navigate('nutrienttracker')} // ✅ Now navigation will work
-        >
+        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('nutrienttracker')}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
