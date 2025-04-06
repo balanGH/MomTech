@@ -3,8 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
-  const navigation = useNavigation(); // ✅ Move useNavigation inside the component
-
+  const navigation = useNavigation();
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -42,6 +41,28 @@ export default function HomeScreen() {
           <Text style={styles.actionText}>Chat with AI</Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.aiSection}>
+        <Text style={styles.sectionTitle}>AI Insights</Text>
+        <View style={styles.insightCard}>
+          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
+          <Text style={styles.insightText}>
+            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.upcomingSection}>
+        <Text style={styles.sectionTitle}>Upcoming</Text>
+        <View style={styles.eventCard}>
+          <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
+          <View style={styles.eventDetails}>
+            <Text style={styles.eventTitle}>Vaccination Due</Text>
+            <Text style={styles.eventTime}>Tomorrow at 10:00 AM</Text>
+          </View>
+        </View>
+      </View>
+      
     </ScrollView>
   );
 }

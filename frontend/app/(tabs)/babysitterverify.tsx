@@ -3,27 +3,34 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BabysitterVerificationScreen() {
   const [documents, setDocuments] = useState({
     babysitting: null,
     firstAid: null,
     anaphylaxis: null,
-    otherDocuments: null, // Optional
+    otherDocuments: null,
   });
   const [loading, setLoading] = useState(false);
-  const [isVerified, setIsVerified] = useState(false); // Verification status
+  const [isVerified, setIsVerified] = useState(false);
+  const [user_email, setUserEmail] = useState('');
 
-  const user_email = "sara@momtech.in";
-
-  // Check verification status on mount
   useEffect(() => {
-    checkVerificationStatus();
+    const fetchEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      setUserEmail(email);
+      if (email) {
+        checkVerificationStatus(email);
+      }
+    };
+  
+    fetchEmail();
   }, []);
-
-  const checkVerificationStatus = async () => {
+  
+  const checkVerificationStatus = async (email) => {
     try {
-      const response = await fetch(`http://10.11.155.214:5000/babysitters/check-verification?email=${user_email}`);
+      const response = await fetch(`http://10.21.76.182:5000/babysitters/check-verification?email=${email}`);
       console.log('Response:', response);
       const result = await response.json();
       if (response.ok && result.verified) {
@@ -33,6 +40,7 @@ export default function BabysitterVerificationScreen() {
       console.error('Error fetching verification status:', error);
     }
   };
+  
 
   const pickDocument = async (type) => {
     if (isVerified) return;
@@ -87,9 +95,9 @@ export default function BabysitterVerificationScreen() {
     formData.append('email', user_email);
 
     try {
-      const response = await fetch('http://10.11.155.214:5000/upload', {
+      const response = await fetch('http://10.21.76.182:5000/upload', {
         method: 'POST',
-        body: formData, // No need to set multipart headers manually
+        body: formData,
       });
 
       const result = await response.json();

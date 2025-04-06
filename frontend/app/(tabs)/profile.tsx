@@ -1,7 +1,22 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
+  const router = useRouter(); // For navigation
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear(); // Clear all data from AsyncStorage
+      Alert.alert('Logged Out', 'You have been successfully logged out.');
+      router.replace('/auth'); // Redirect to the authentication screen
+    } catch (error) {
+      console.error('Error clearing AsyncStorage:', error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -62,7 +77,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <MaterialCommunityIcons name="logout" size={20} color="#DC2626" />
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>

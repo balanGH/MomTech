@@ -2,19 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TextInput, Button, Alert, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HealthScreen() {
-  const user_email = 'mom@momtech.in';
   const [healthOverview, setHealthOverview] = useState([]);
   const [healthConditions, setHealthConditions] = useState([]);
   const [newWeight, setNewWeight] = useState('');
   const [newHeight, setNewHeight] = useState('');
   const [newTemperature, setNewTemperature] = useState('');
-  const [showForm, setShowForm] = useState(false); // State to toggle the form visibility
+  const [showForm, setShowForm] = useState(false);
+  const [user_email, setUserEmail] = useState('');
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      setUserEmail(email);
+    };
+    fetchEmail();
+  }, []);
 
   const fetchChildDetails = async () => {
     try {
-      const response = await fetch(`http://10.11.155.214:5000/mom/child?email=${user_email}`);
+      const response = await fetch(`http://10.21.76.182:5000/mom/child?email=${user_email}`);
       const result = await response.json();
 
       if (result.child) {
@@ -40,7 +49,7 @@ export default function HealthScreen() {
     };
 
     try {
-      const response = await fetch(`http://10.11.155.214:5000/mom/childupdate`, {
+      const response = await fetch(`http://10.21.76.182:5000/mom/childupdate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user_email, healthoverview: newEntry }),
