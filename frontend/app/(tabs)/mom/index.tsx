@@ -1,17 +1,17 @@
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://10.21.76.182:5000/admin/events');
+        const response = await axios.get('http://10.16.48.219:5000/admin/events');
         setEvents(response.data.events);
       } catch (error) {
         console.error('Error fetching events:', error.message || error);
@@ -45,7 +45,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('nutrienttracker')}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("../components/nutrienttracker")}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
