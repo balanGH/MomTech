@@ -1,10 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, Animated, TouchableOpacity, Button, Alert } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigation } from 'expo-router';
 
 export default function NutrientTrackerScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const navigation = useNavigation();
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [reviewedGroups, setReviewedGroups] = useState([]);
 
