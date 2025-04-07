@@ -30,7 +30,7 @@ export default function BabysitterVerificationScreen() {
   
   const checkVerificationStatus = async (email) => {
     try {
-      const response = await fetch(`http://10.11.155.214:5000/babysitters/check-verification?email=${email}`);
+      const response = await fetch(`http://10.21.76.182:5000/babysitters/check-verification?email=${email}`);
       console.log('Response:', response);
       const result = await response.json();
       if (response.ok && result.verified) {
@@ -95,7 +95,7 @@ export default function BabysitterVerificationScreen() {
     formData.append('email', user_email);
 
     try {
-      const response = await fetch('http://10.11.155.214:5000/upload', {
+      const response = await fetch('http://10.21.76.182:5000/upload', {
         method: 'POST',
         body: formData,
       });

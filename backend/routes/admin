@@ -37,4 +37,15 @@ router.post('/addevent', async (req, res) => {
   }
 });
 
+router.get('/events', async (req, res) => {
+  try {
+    const events = await Event.find({}).sort({ date: 1 });
+
+    return res.status(200).json({ events });
+  } catch (error) {
+    console.error('❌ Error fetching events:', error.message || error);
+    return res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+});
+
 module.exports = router;

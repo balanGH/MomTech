@@ -121,8 +121,8 @@ const Auth = () => {
   
     try {
       const url = isLogin
-        ? 'http://10.11.155.214:5000/auth/login'
-        : `http://10.11.155.214:5000/auth/register/${selectedMode}`;
+        ? 'http://10.21.76.182:5000/auth/login'
+        : `http://10.21.76.182:5000/auth/register/${selectedMode}`;
   
       // Construct payload based on login/register logic
       const payload = {

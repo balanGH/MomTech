@@ -1,9 +1,26 @@
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://10.21.76.182:5000/admin/events');
+        setEvents(response.data.events);
+      } catch (error) {
+        console.error('Error fetching events:', error.message || error);
+      }
+    };
+  
+    fetchEvents();
+  }, []);
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -51,18 +68,25 @@ export default function HomeScreen() {
           </Text>
         </View>
       </View>
-
       <View style={styles.upcomingSection}>
         <Text style={styles.sectionTitle}>Upcoming</Text>
-        <View style={styles.eventCard}>
-          <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
-          <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle}>Vaccination Due</Text>
-            <Text style={styles.eventTime}>Tomorrow at 10:00 AM</Text>
-          </View>
-        </View>
+        {events.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No upcoming events</Text>
+        ) : (
+          events.map((event, index) => (
+            <View key={index} style={styles.eventCard}>
+              <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
+              <View style={styles.eventDetails}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventTime}>
+                  {new Date(event.date).toLocaleDateString()} at {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+                <Text style={styles.eventTitle}>{event.location}</Text>
+              </View>
+            </View>
+          ))
+        )}
       </View>
-      
     </ScrollView>
   );
 }
@@ -181,7 +205,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   eventTime: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     marginTop: 2,
   },

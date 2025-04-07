@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const healthOverviewSchema = new mongoose.Schema({
   date: { type: Date, required: true }, // Date of the health entry
-  weight: { type: Number, required: true },
-  height: { type: Number, required: true },
-  temperature: { type: Number, min: 28, max: 50, required: true },
+  weight: { type: Number },
+  height: { type: Number },
+  temperature: { type: Number, min: 28, max: 50 },
 });
 
 const childSchema = new mongoose.Schema({

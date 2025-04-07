@@ -1,19 +1,33 @@
 const mongoose = require('mongoose');
 
-const MomSchema = new mongoose.Schema({
+const healthOverviewSchema = new mongoose.Schema({
+  date: { type: Date, required: true },
+  weight: { type: Number },
+  height: { type: Number },
+  temperature: { type: Number, min: 28, max: 50 },
+}, { _id: false });
+
+const childSchema = new mongoose.Schema({
   name: String,
-  email: { type: String, unique: true },
-  password: String,
-  phone: String,
-  children: [{
-    name: String,
-    age: Number,
-    specialNeeds: String
-  }],
-  verification: { type: Boolean, default: false },
-  verificationToken: String,
-  resetToken: String,
-  createdAt: { type: Date, default: Date.now }
+  age: { type: Date},
+  healthoverview: { type: [healthOverviewSchema], default: [] },
 });
 
-module.exports = mongoose.model('Mom', MomSchema);
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  phone: { type: String },
+  child: childSchema,
+  address: {
+    street: { type: String },
+    city: { type: String },
+    dist: { type: String },
+    state: { type: String },
+    country: { type: String },
+  },
+  profile_picture: { type: String },
+  created_at: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('Mom', userSchema);

@@ -16,6 +16,7 @@ export default function HealthScreen() {
   useEffect(() => {
     const fetchEmail = async () => {
       const email = await AsyncStorage.getItem('email');
+      console.log("health.tsx: " + email);
       setUserEmail(email);
     };
     fetchEmail();
@@ -23,16 +24,12 @@ export default function HealthScreen() {
 
   const fetchChildDetails = async () => {
     try {
-      const response = await fetch(`http://10.11.155.214:5000/mom/child?email=${user_email}`);
+      const response = await fetch(`http://10.21.76.182:5000/mom/child?email=${user_email}`);
       const result = await response.json();
 
       if (result.child) {
-        // Sort healthoverview by date in ascending order
         const sortedOverview = (result.child.healthoverview || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        // Set health overview
         setHealthOverview(sortedOverview);
-        // Set health conditions (e.g., allergies)
         setHealthConditions(result.child.medicalcondition?.allergy || []);
       }
     } catch (error) {
@@ -49,7 +46,7 @@ export default function HealthScreen() {
     };
 
     try {
-      const response = await fetch(`http://10.11.155.214:5000/mom/childupdate`, {
+      const response = await fetch(`http://10.21.76.182:5000/mom/childupdate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user_email, healthoverview: newEntry }),
@@ -73,7 +70,7 @@ export default function HealthScreen() {
 
   useEffect(() => {
     fetchChildDetails();
-  }, []);
+  }, [user_email]); // Important: fetch only after email is set
 
   const weights = healthOverview.map((entry) => parseFloat(entry.weight));
   const heights = healthOverview.map((entry) => parseFloat(entry.height));
@@ -83,6 +80,7 @@ export default function HealthScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Health Overview Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health Overview</Text>
         <View style={styles.statsContainer}>
@@ -111,39 +109,43 @@ export default function HealthScreen() {
           </View>
         </View>
       </View>
+
+      {/* Update Health Overview Section */}
       <View style={styles.section}>
         {!showForm && (
           <TouchableOpacity style={styles.updateButton} onPress={() => setShowForm(true)}>
-          <Text style={styles.updateButtonText}>Update Health Overview</Text>
-        </TouchableOpacity>        
+            <Text style={styles.updateButtonText}>Update Health Overview</Text>
+          </TouchableOpacity>
         )}
-          {showForm && (
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Weight (kg)"
-                value={newWeight}
-                onChangeText={setNewWeight}
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Height (cm)"
-                value={newHeight}
-                onChangeText={setNewHeight}
-                keyboardType="numeric"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Temperature (°C)"
-                value={newTemperature}
-                onChangeText={setNewTemperature}
-                keyboardType="numeric"
-              />
-              <Button title="Submit" onPress={updateHealthOverview} color="#7C3AED" />
-            </View>
-          )}
+        {showForm && (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Weight (kg)"
+              value={newWeight}
+              onChangeText={setNewWeight}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Height (cm)"
+              value={newHeight}
+              onChangeText={setNewHeight}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Temperature (°C)"
+              value={newTemperature}
+              onChangeText={setNewTemperature}
+              keyboardType="numeric"
+            />
+            <Button title="Submit" onPress={updateHealthOverview} color="#7C3AED" />
+          </View>
+        )}
       </View>
+
+      {/* Health Conditions Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health Conditions</Text>
         {healthConditions.length > 0 ? (
@@ -163,33 +165,34 @@ export default function HealthScreen() {
         )}
       </View>
 
+      {/* Growth Chart Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Growth Chart</Text>
         {weights.length > 0 && heights.length > 0 ? (
           <LineChart
             data={{
-              labels: labels, // Dates on the X-axis
+              labels: labels,
               datasets: [
                 {
-                  data: weights, // Weights for the graph
-                  color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // Weight line color
-                  strokeWidth: 2, // Thickness of weight line
+                  data: weights,
+                  color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+                  strokeWidth: 2,
                 },
                 {
-                  data: heights, // Heights for the graph
-                  color: (opacity = 1) => `rgba(34, 128, 176, ${opacity})`, // Height line color
-                  strokeWidth: 2, // Thickness of height line
+                  data: heights,
+                  color: (opacity = 1) => `rgba(34, 128, 176, ${opacity})`,
+                  strokeWidth: 2,
                 },
               ],
-              legend: ['Weight (kg)', 'Height (cm)'], // Legend for the graph
+              legend: ['Weight (kg)', 'Height (cm)'],
             }}
-            width={Dimensions.get('window').width - 32} // Full-width graph
+            width={Dimensions.get('window').width - 32}
             height={220}
             chartConfig={{
               backgroundColor: '#fff',
               backgroundGradientFrom: '#f3f4f6',
               backgroundGradientTo: '#fff',
-              decimalPlaces: 1, // Show 1 decimal point
+              decimalPlaces: 1,
               color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               style: { borderRadius: 16 },
@@ -200,13 +203,10 @@ export default function HealthScreen() {
               },
             }}
             bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 16,
-            }}
+            style={{ marginVertical: 8, borderRadius: 16 }}
           />
         ) : (
-          <Text style={styles.chartText}>Loading graph data...</Text>
+          <Text>Loading chart...</Text>
         )}
       </View>
     </ScrollView>
@@ -217,126 +217,89 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
-  },
-  section: {
     padding: 16,
   },
+  section: {
+    marginBottom: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#111827',
     marginBottom: 12,
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
   },
   statCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
     alignItems: 'center',
-    width: '30%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   statValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 8,
+    fontWeight: '600',
+    marginVertical: 4,
+    color: '#4B5563',
   },
   statLabel: {
     fontSize: 14,
     color: '#6B7280',
-    marginTop: 4,
-  },
-  conditionCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  conditionInfo: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  conditionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  conditionDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  noConditionsText: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  chartPlaceholder: {
-    backgroundColor: '#fff',
-    padding: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  chartText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 8,
   },
   updateButton: {
     backgroundColor: '#7C3AED',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   updateButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
+    color: '#FFFFFF',
     fontWeight: 'bold',
-  },  
+    fontSize: 16,
+  },
   inputContainer: {
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    elevation: 4,
+    marginTop: 12,
   },
   input: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },   
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  conditionCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    backgroundColor: '#FEE2E2',
+    padding: 10,
+    borderRadius: 8,
+  },
+  conditionInfo: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  conditionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#B91C1C',
+  },
+  conditionDescription: {
+    fontSize: 14,
+    color: '#991B1B',
+    marginTop: 4,
+  },
+  noConditionsText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontStyle: 'italic',
+  },
 });
