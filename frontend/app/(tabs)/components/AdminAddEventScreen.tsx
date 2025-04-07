@@ -14,7 +14,7 @@ const AdminAddEventScreen = () => {
     }
 
     try {
-      const response = await fetch('http://10.21.76.182:5000/admin/addevent', {
+      const response = await fetch('http://10.11.155.214:5000/admin/addevent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, date, location }),

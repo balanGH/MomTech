@@ -51,3 +51,33 @@ C:.
             mom-love.png
 
 C:\Users\balan\Documents\GitHub\MomTech\frontend>
+
+
+PS D:\2022115104\sem 6\SRP\MomTech\frontend\app> tree /f
+Folder PATH listing for volume New Volume
+Volume serial number is 00FC-EE32
+D:.
+│   +not-found.tsx
+│   _layout.tsx
+│
+└───(tabs)
+    │   index.tsx
+    │
+    ├───babysitter
+    │       babysitterverify.tsx
+    │       index.tsx
+    │       _layout.tsx
+    │
+    ├───components
+    │       AdminAddEventScreen.tsx
+    │       nutrienttracker.tsx
+    │
+    └───mom
+            babysitters.tsx
+            health.tsx
+            index.tsx
+            profile.tsx
+            schedule.tsx
+            _layout.tsx
+
+PS D:\2022115104\sem 6\SRP\MomTech\frontend\app>

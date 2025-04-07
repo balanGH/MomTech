@@ -1,188 +1,481 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
+import DatePicker from 'react-native-date-picker';
+import {View, Text, TextInput, TouchableOpacity,StyleSheet, Image, ScrollView, SafeAreaView, Alert} from 'react-native';
 
-export default function HomeScreen() {
-  const navigation = useNavigation();
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.welcomeSection}>
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=800' }}
-          style={styles.headerImage}
-        />
-        <Text style={styles.welcomeText}>Welcome, Sarah!</Text>
-        <Text style={styles.subtitle}>How can I help you today?</Text>
-      </View>
+const Auth = () => {
+  const [selectedMode, setSelectedMode] = useState(null);
+  const [isLogin, setIsLogin] = useState(true);
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    phone: '',
+    childName: '',
+    childDOB: new Date(),
+    address: {
+      street: '',
+      city: '',
+      dist: '',
+      state: '',
+      country: '',
+    },
+    fare: '',
+  });
+  const [errors, setErrors] = useState({});
 
-      <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.actionCard}>
-          <MaterialCommunityIcons name="baby-bottle" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Track Feeding</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
-          <MaterialCommunityIcons name="sleep" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Sleep Log</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
-          <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Appointments</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('nutrienttracker')}>
-          <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Nutrients Track</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
-          <MaterialCommunityIcons name="bell" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Reminders</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard}>
-          <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Chat with AI</Text>
-        </TouchableOpacity>
-      </View>
+  const router = useRouter();
 
-      <View style={styles.aiSection}>
-        <Text style={styles.sectionTitle}>AI Insights</Text>
-        <View style={styles.insightCard}>
-          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
-          <Text style={styles.insightText}>
-            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
-          </Text>
-        </View>
-      </View>
+  const IMAGES = {
+    momLogo: 'https://cdn-icons-png.flaticon.com/512/3137/3137204.png',
+    momIcon: 'https://cdn-icons-png.flaticon.com/512/3011/3011270.png',
+    babysitterIcon: 'https://cdn-icons-png.flaticon.com/512/11449/11449901.png',
+    momHeart: 'https://cdn-icons-png.flaticon.com/512/1027/1027112.png'
+  };
 
-      <View style={styles.upcomingSection}>
-        <Text style={styles.sectionTitle}>Upcoming</Text>
-        <View style={styles.eventCard}>
-          <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
-          <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle}>Vaccination Due</Text>
-            <Text style={styles.eventTime}>Tomorrow at 10:00 AM</Text>
-          </View>
-        </View>
-      </View>
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!isLogin) {
+      if (!formData.name) newErrors.name = 'Name is required';
+      if (!formData.phone) newErrors.phone = 'Phone is required';
       
-    </ScrollView>
-  );
-}
+      if (selectedMode === 'mom') {
+        if (!formData.childName) newErrors.childName = "Child's name is required";
+      } else {
+        if (!formData.fare) newErrors.fare = 'Hourly fare is required';
+        if (!formData.address.street) newErrors.street = 'Street address is required';
+        if (!formData.address.city) newErrors.city = 'City is required';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
+  const handleModeSelect = (mode) => {
+    setSelectedMode(mode);
+    setIsLogin(true);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      name: '',
+      phone: '',
+      childName: '',
+      childDOB: new Date(),
+      address: {
+        street: '',
+        city: '',
+        dist: '',
+        state: '',
+        country: '',
+      },
+      fare: '',
+    });
+    setErrors({});
+  };
+
+  const handleInputChange = (name, value) => {
+    if (name.includes('address.')) {
+      const [parent, child] = name.split('.');
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [child]: value,
+        },
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+    
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleAuthAction = async () => {
+    if (!validateForm()) return;
+  
+    try {
+      const url = isLogin
+        ? 'http://10.11.155.214:5000/auth/login'
+        : `http://10.11.155.214:5000/auth/register/${selectedMode}`;
+  
+      // Construct payload based on login/register logic
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        phone: formData.phone,
+        userType: selectedMode,
+        ...(!isLogin && selectedMode === 'mom' && {
+          childName: formData.childName,
+          childDOB: formData.childDOB,
+        }),
+        ...(!isLogin && selectedMode === 'babysitter' && {
+          fare: formData.fare,
+          address: formData.address,
+        }),
+      };
+  
+      const response = await axios.post(url, payload);
+  
+      if (isLogin) {
+        await AsyncStorage.multiSet([
+          ['token', response.data.token],
+          ['userType', selectedMode],
+          ['email', formData.email],
+          ['name', response.data.name || formData.name],
+        ]);
+  
+        if (selectedMode === 'babysitter') {
+          router.replace('/babysitter/');
+        } else {
+          router.replace('/mom/');
+        }
+      } else {
+        // Show success alert on registration
+        const successMessage =
+          selectedMode === 'mom'
+            ? 'Mom account created successfully!'
+            : 'Babysitter registration submitted!';
+        Alert.alert('Success', successMessage, [
+          { text: 'OK', onPress: () => setIsLogin(true) },
+        ]);
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      const errorMessage =
+        error?.response?.data?.error || error.message || 'Something went wrong';
+      Alert.alert('Error', errorMessage);
+    }
+  };
+  
+
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
+  };
+
+  if (!selectedMode) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Image source={{ uri: IMAGES.momLogo }} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.title}>Welcome to MomCare</Text>
+        <Text style={styles.subtitle}>Choose your mode to continue</Text>
+        
+        <TouchableOpacity 
+          style={[styles.modeButton, {backgroundColor: '#FF85A2'}]}
+          onPress={() => handleModeSelect('mom')}
+        >
+          <Image source={{ uri: IMAGES.momIcon }} style={styles.modeIcon} resizeMode="contain" />
+          <Text style={styles.modeText}>I'm a Mom</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.modeButton, {backgroundColor: '#7EC4CF'}]}
+          onPress={() => handleModeSelect('babysitter')}
+        >
+          <Image source={{ uri: IMAGES.babysitterIcon }} style={styles.modeIcon} resizeMode="contain" />
+          <Text style={styles.modeText}>I'm a Babysitter</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.authContainer}>
+        <Image 
+          source={{ uri: selectedMode === 'mom' ? IMAGES.momHeart : IMAGES.babysitterIcon }} 
+          style={styles.authLogo} 
+          resizeMode="contain"
+        />
+        <Text style={styles.authTitle}>
+          {isLogin ? 'Welcome Back!' : selectedMode === 'mom' ? 'Join Our Mom Community' : 'Babysitter Registration'}
+        </Text>
+        
+        {!isLogin && (
+          <>
+            <TextInput
+              style={[styles.input, errors.name && styles.errorInput]}
+              placeholder="Full Name"
+              value={formData.name}
+              onChangeText={(text) => handleInputChange('name', text)}
+            />
+            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+          </>
+        )}
+        
+        <TextInput
+          style={[styles.input, errors.email && styles.errorInput]}
+          placeholder="Email"
+          keyboardType="email-address"
+          value={formData.email}
+          onChangeText={(text) => handleInputChange('email', text)}
+          autoCapitalize="none"
+        />
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+        
+        <TextInput
+          style={[styles.input, errors.password && styles.errorInput]}
+          placeholder="Password"
+          secureTextEntry={true}
+          value={formData.password}
+          onChangeText={(text) => handleInputChange('password', text)}
+        />
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+        
+        {!isLogin && (
+          <>
+            <TextInput
+              style={[styles.input, errors.phone && styles.errorInput]}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+              value={formData.phone}
+              onChangeText={(text) => handleInputChange('phone', text)}
+            />
+            {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+          </>
+        )}
+        
+        {!isLogin && selectedMode === 'mom' && (
+          <>
+            <TextInput
+              style={[styles.input, errors.childName && styles.errorInput]}
+              placeholder="Your Child's Name"
+              value={formData.childName}
+              onChangeText={(text) => handleInputChange('childName', text)}
+            />
+            {errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>}
+            
+            <TouchableOpacity
+              style={[styles.input, errors.childDOB && styles.errorInput]}
+              onPress={() => setIsDatePickerVisible(true)}
+            >
+              <Text>
+                {formData.childDOB.toDateString() || 'Select Child Date of Birth'}
+              </Text>
+            </TouchableOpacity>
+            
+            <DatePicker
+              modal
+              open={isDatePickerVisible}
+              date={formData.childDOB}
+              onConfirm={(date) => {
+                handleInputChange('childDOB', date);
+                setIsDatePickerVisible(false);
+              }}
+              onCancel={() => setIsDatePickerVisible(false)}
+            />
+          </>
+        )}
+        
+        {!isLogin && selectedMode === 'babysitter' && (
+          <>
+            <TextInput
+              style={[styles.input, errors.fare && styles.errorInput]}
+              placeholder="Hourly Fare (₹)"
+              keyboardType="numeric"
+              value={formData.fare}
+              onChangeText={(text) => handleInputChange('fare', text)}
+            />
+            {errors.fare && <Text style={styles.errorText}>{errors.fare}</Text>}
+            
+            <Text style={styles.sectionHeader}>Address Information</Text>
+            
+            <TextInput
+              style={[styles.input, errors.street && styles.errorInput]}
+              placeholder="Street Address"
+              value={formData.address.street}
+              onChangeText={(text) => handleInputChange('address.street', text)}
+            />
+            {errors.street && <Text style={styles.errorText}>{errors.street}</Text>}
+            
+            <TextInput
+              style={[styles.input, errors.city && styles.errorInput]}
+              placeholder="City"
+              value={formData.address.city}
+              onChangeText={(text) => handleInputChange('address.city', text)}
+            />
+            {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
+            
+            <TextInput
+              style={styles.input}
+              placeholder="District"
+              value={formData.address.dist}
+              onChangeText={(text) => handleInputChange('address.dist', text)}
+            />
+            
+            <TextInput
+              style={styles.input}
+              placeholder="State"
+              value={formData.address.state}
+              onChangeText={(text) => handleInputChange('address.state', text)}
+            />
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Country"
+              value={formData.address.country}
+              onChangeText={(text) => handleInputChange('address.country', text)}
+            />
+          </>
+        )}
+        
+        <TouchableOpacity style={styles.authButton} onPress={handleAuthAction}>
+          <Text style={styles.authButtonText}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={toggleAuthMode}>
+          <Text style={styles.toggleAuthText}>
+            {isLogin 
+              ? "Don't have an account? Sign Up" 
+              : "Already have an account? Login"}
+          </Text>
+        </TouchableOpacity>
+        
+        {selectedMode === 'mom' && (
+          <Text style={styles.heartwarmingText}>
+            "Because every mom deserves a helping hand ❤️"
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB', // Light neutral background
+    backgroundColor: '#FFF9FB',
+    justifyContent: 'center',
   },
-  welcomeSection: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+  logo: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
-  headerImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  welcomeText: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#1F2937',
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF85A2',
     textAlign: 'center',
+    marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
-    marginTop: 4,
+    color: '#888',
     textAlign: 'center',
+    marginBottom: 30,
   },
-  quickActions: {
+  modeButton: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  actionCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '30%', // Adjusted to fit three in a row
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 15,
+    borderRadius: 25,
+    marginHorizontal: 40,
+    marginVertical: 10,
+    elevation: 3,
   },
-  actionText: {
-    marginTop: 8,
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#374151',
-    textAlign: 'center',
+  modeIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
   },
-  aiSection: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
+  modeText: {
+    color: 'white',
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 12,
+    fontSize: 16,
+  },
+  authContainer: {
+    padding: 30,
+    alignItems: 'center',
+  },
+  authLogo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+  authTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FF85A2',
+    marginBottom: 30,
     textAlign: 'center',
   },
-  insightCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    flexDirection: 'row',
+  input: {
+    width: '100%',
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 5,
+    borderWidth: 1,
+    borderColor: '#EEE',
+  },
+  errorInput: {
+    borderColor: 'red',
+  },
+  errorText: {
+    color: 'red',
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  sectionHeader: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    fontWeight: 'bold',
+    color: '#555',
+  },
+  authButton: {
+    width: '100%',
+    backgroundColor: '#FF85A2',
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginTop: 10,
   },
-  insightText: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 14,
-    color: '#4B5563',
-  },
-  upcomingSection: {
-    padding: 20,
-  },
-  eventCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  eventDetails: {
-    marginLeft: 12,
-  },
-  eventTitle: {
+  authButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
   },
-  eventTime: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+  toggleAuthText: {
+    color: '#FF85A2',
+    marginTop: 20,
+    textDecorationLine: 'underline',
+  },
+  heartwarmingText: {
+    marginTop: 30,
+    color: '#888',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
+
+export default Auth;

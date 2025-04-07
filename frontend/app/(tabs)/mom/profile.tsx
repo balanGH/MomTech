@@ -10,7 +10,7 @@ export default function ProfileScreen() {
     try {
       await AsyncStorage.clear(); // Clear all data from AsyncStorage
       Alert.alert('Logged Out', 'You have been successfully logged out.');
-      router.replace('/auth'); // Redirect to the authentication screen
+      router.replace('/'); // Redirect to the authentication screen
     } catch (error) {
       console.error('Error clearing AsyncStorage:', error);
       Alert.alert('Error', 'Failed to log out. Please try again.');

@@ -23,7 +23,7 @@ export default function HealthScreen() {
 
   const fetchChildDetails = async () => {
     try {
-      const response = await fetch(`http://10.21.76.182:5000/mom/child?email=${user_email}`);
+      const response = await fetch(`http://10.11.155.214:5000/mom/child?email=${user_email}`);
       const result = await response.json();
 
       if (result.child) {
@@ -49,7 +49,7 @@ export default function HealthScreen() {
     };
 
     try {
-      const response = await fetch(`http://10.21.76.182:5000/mom/childupdate`, {
+      const response = await fetch(`http://10.11.155.214:5000/mom/childupdate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user_email, healthoverview: newEntry }),
