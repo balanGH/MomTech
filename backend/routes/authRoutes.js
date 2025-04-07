@@ -54,7 +54,25 @@ router.post('/register/:userType', async (req, res) => {
     // Create new user based on type
     let newUser;
     if (userType === 'mom') {
-      newUser = new Mom(userData);
+      newUser = new Mom({
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        phone: userData.phone,
+        child: {
+          name: userData.childName,
+          age: userData.childDOB,
+          healthoverview: []
+        },
+        address: {
+          street: userData.street,
+          city: userData.city,
+          dist: userData.dist,
+          state: userData.state,
+          country: userData.country
+        },
+        profile_picture: userData.profile_picture,
+      });
     } else if (userType === 'babysitter') {
       newUser = new Babysitter({
         name: userData.name,
