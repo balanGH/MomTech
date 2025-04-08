@@ -16,7 +16,6 @@ export default function HealthScreen() {
   useEffect(() => {
     const fetchEmail = async () => {
       const email = await AsyncStorage.getItem('email');
-      console.log("health.tsx: " + email);
       setUserEmail(email);
     };
     fetchEmail();
@@ -70,7 +69,7 @@ export default function HealthScreen() {
 
   useEffect(() => {
     fetchChildDetails();
-  }, [user_email]); // Important: fetch only after email is set
+  }, [user_email]);
 
   const weights = healthOverview.map((entry) => parseFloat(entry.weight));
   const heights = healthOverview.map((entry) => parseFloat(entry.height));
@@ -78,7 +77,6 @@ export default function HealthScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Health Overview Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health Overview</Text>
         <View style={styles.statsContainer}>
@@ -107,8 +105,6 @@ export default function HealthScreen() {
           </View>
         </View>
       </View>
-
-      {/* Update Health Overview Section */}
       <View style={styles.section}>
         {!showForm && (
           <TouchableOpacity style={styles.updateButton} onPress={() => setShowForm(true)}>
@@ -142,8 +138,6 @@ export default function HealthScreen() {
           </View>
         )}
       </View>
-
-      {/* Health Conditions Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health Conditions</Text>
         {healthConditions.length > 0 ? (
@@ -162,8 +156,6 @@ export default function HealthScreen() {
           <Text style={styles.noConditionsText}>No health conditions available.</Text>
         )}
       </View>
-
-      {/* Growth Chart Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Growth Chart</Text>
         {weights.length > 0 && heights.length > 0 ? (

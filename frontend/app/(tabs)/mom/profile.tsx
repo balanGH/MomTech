@@ -12,7 +12,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchEmail = async () => {
       const email = await AsyncStorage.getItem('email');
-      console.log("profile.tsx: " + email);
       setUserEmail(email);
     };
     fetchEmail();
@@ -29,19 +28,42 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'No mother details found.');
       }
     } catch (error) {
-      console.error('Error fetching child details:', error);
+      console.error('Error fetching mom details:', error);
     }
   };
 
   useEffect(() => {
-    fetchMomDetails();
+    if (user_email) {
+      fetchMomDetails();
+    }
   }, [user_email]);
+
+  const calculateChildAge = (dob: string) => {
+    if (!dob) return '';
+
+    const birthDate = new Date(dob);
+    const today = new Date();
+
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    if (years > 0) {
+      return `${years} year${years > 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''} old`;
+    } else {
+      return `${months} month${months !== 1 ? 's' : ''} old`;
+    }
+  };
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.clear(); // Clear all data from AsyncStorage
+      await AsyncStorage.clear();
       Alert.alert('Logged Out', 'You have been successfully logged out.');
-      router.replace('/'); // Redirect to the authentication screen
+      router.replace('/');
     } catch (error) {
       console.error('Error clearing AsyncStorage:', error);
       Alert.alert('Error', 'Failed to log out. Please try again.');
@@ -62,14 +84,18 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Child Information</Text>
         <View style={styles.childCard}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1519457431-44ccd64a579f?w=400' }}
+          <Image 
+            source={{ uri: 'https://tse3.mm.bing.net/th/id/OIP.1FOOnev1gEk_rDxrEWWvKAHaEJ?pid=ImgDet&w=206&h=115&c=7&dpr=1.3' }} 
             style={styles.childImage}
           />
           <View style={styles.childInfo}>
-          <Text style={styles.childName}>{momDetails?.child?.name}{momDetails.hubname}</Text>
-          <Text style={styles.childAge}>6 months old</Text>
-            <Text style={styles.childDob}>{momDetails?.child?.age}</Text>
+            <Text style={styles.childName}>{momDetails?.child?.name}</Text>
+            <Text style={styles.childAge}>
+              {calculateChildAge(momDetails?.child?.age)}
+            </Text>
+            <Text style={styles.childDob}>
+              DOB: {momDetails?.child?.age ? momDetails.child.age.split('T')[0] : ''}
+            </Text>
           </View>
         </View>
       </View>
@@ -77,6 +103,7 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
+          {/* Actions */}
           <TouchableOpacity style={styles.actionCard}>
             <MaterialCommunityIcons name="account-edit" size={24} color="#7C3AED" />
             <Text style={styles.actionText}>Edit Profile</Text>

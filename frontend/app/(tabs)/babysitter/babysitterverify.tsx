@@ -31,7 +31,6 @@ export default function BabysitterVerificationScreen() {
   const checkVerificationStatus = async (email) => {
     try {
       const response = await fetch(`http://10.21.76.182:5000/babysitters/check-verification?email=${email}`);
-      console.log('Response:', response);
       const result = await response.json();
       if (response.ok && result.verified) {
         setIsVerified(true);

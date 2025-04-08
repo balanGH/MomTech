@@ -1,9 +1,76 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Animated, FlatList } from 'react-native';
+import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
+  const [events, setEvents] = useState([]);
+  const [user_email, setUserEmail] = useState('');
+  const [momDetails, setMomDetails] = useState({});
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      setUserEmail(email);
+    };
+    fetchEmail();
+  }, []);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://10.16.48.219:5000/admin/events');
+        setEvents(response.data.events);
+      } catch (error) {
+        console.error('Error fetching events:', error.message || error);
+      }
+    };
+  
+    fetchEvents();
+  }, []);
+
+  const fetchMomDetails = async () => {
+    try {
+      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
+      const result = await response.json();
+
+      if (result.mom) {
+        setMomDetails(result.mom);
+      } else {
+        Alert.alert('Error', 'No mother details found.');
+      }
+    } catch (error) {
+      console.error('Error fetching mom details:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user_email) {
+      fetchMomDetails();
+    }
+  }, [user_email]);
+
+  const today = new Date();
+  const upcomingEvents = events.filter(event => new Date(event.date) > today);
+  const finishedEvents = events.filter(event => new Date(event.date) <= today);
+
+  const renderEventCard = ({ item }) => (
+    <View style={styles.eventCard}>
+      <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
+      <View style={styles.eventDetails}>
+        <Text style={styles.eventTitle}>{item.title}</Text>
+        <Text style={styles.eventTime}>
+          {new Date(item.date).toLocaleDateString()} at {item.time || 'Time not specified'}
+        </Text>
+        <Text style={styles.eventTitle}>{item.location}</Text>
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -11,7 +78,7 @@ export default function HomeScreen() {
           source={{ uri: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=800' }}
           style={styles.headerImage}
         />
-        <Text style={styles.welcomeText}>Welcome, BabySitter Enma!</Text>
+        <Text style={styles.welcomeText}>Welcome, {momDetails.name}!</Text>
         <Text style={styles.subtitle}>How can I help you today?</Text>
       </View>
 
@@ -28,7 +95,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('/components/nutrienttracker')}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("../components/nutrienttracker")}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -42,30 +109,46 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.aiSection}>
-        <Text style={styles.sectionTitle}>AI Insights</Text>
-        <View style={styles.insightCard}>
-          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
-          <Text style={styles.insightText}>
-            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
-          </Text>
-        </View>
-      </View>
-
       <View style={styles.upcomingSection}>
-        <Text style={styles.sectionTitle}>Upcoming</Text>
-        <View style={styles.eventCard}>
-          <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
-          <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle}>Vaccination Due</Text>
-            <Text style={styles.eventTime}>Tomorrow at 10:00 AM</Text>
+        <Text style={styles.sectionTitle}>Upcoming & Finished</Text>
+
+        <Animated.ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false }
+          )}
+        >
+          <View style={styles.eventList}>
+            <Text style={styles.sectionTitle}>Upcoming Events</Text>
+            <FlatList
+              data={upcomingEvents}
+              renderItem={renderEventCard}
+              keyExtractor={(item) => item._id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
           </View>
-        </View>
+
+          <View style={styles.eventList}>
+            <Text style={styles.sectionTitle}>Finished Events</Text>
+            <FlatList
+              data={finishedEvents}
+              renderItem={renderEventCard}
+              keyExtractor={(item) => item._id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        </Animated.ScrollView>
       </View>
-      
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -180,7 +263,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   eventTime: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     marginTop: 2,
   },

@@ -133,6 +133,7 @@ const Auth = () => {
       };
 
       const response = await axios.post(url, payload);
+      console.log('Auth response:', response);
 
       if (isLogin) {
         await AsyncStorage.multiSet([

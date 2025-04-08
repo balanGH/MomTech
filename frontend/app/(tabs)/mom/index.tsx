@@ -1,20 +1,29 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Animated } from 'react-native';
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 export default function HomeScreen() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
   const [user_email, setUserEmail] = useState('');
+  const [momDetails, setMomDetails] = useState({});
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500, 
+      useNativeDriver: true,
+    }).start();
+  }, [events]);
 
   useEffect(() => {
     const fetchEmail = async () => {
       const email = await AsyncStorage.getItem('email');
-      console.log("health.tsx: " + email);
       setUserEmail(email);
     };
     fetchEmail();
@@ -32,7 +41,32 @@ export default function HomeScreen() {
   
     fetchEvents();
   }, []);
-  
+
+  const fetchMomDetails = async () => {
+    try {
+      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
+      const result = await response.json();
+
+      if (result.mom) {
+        setMomDetails(result.mom);
+      } else {
+        Alert.alert('Error', 'No mother details found.');
+      }
+    } catch (error) {
+      console.error('Error fetching mom details:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user_email) {
+      fetchMomDetails();
+    }
+  }, [user_email]);
+
+  const today = new Date();
+  const upcomingEvents = events.filter(event => new Date(event.date) > today);
+  const finishedEvents = events.filter(event => new Date(event.date) <= today);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -40,7 +74,7 @@ export default function HomeScreen() {
           source={{ uri: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=800' }}
           style={styles.headerImage}
         />
-        <Text style={styles.welcomeText}>Welcome, Sarah!</Text>
+        <Text style={styles.welcomeText}>Welcome, {momDetails.name}!</Text>
         <Text style={styles.subtitle}>How can I help you today?</Text>
       </View>
 
@@ -71,39 +105,46 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.aiSection}>
-        <Text style={styles.sectionTitle}>AI Insights</Text>
-        <View style={styles.insightCard}>
-          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
-          <Text style={styles.insightText}>
-            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
-          </Text>
-        </View>
-      </View>
       <View style={styles.upcomingSection}>
-        {user_email === 'admin@momtech.in' ? (
-          <Text style={styles.sectionTitle} onPress={() => router.push("../components/AdminAddEventScreen")}>
-            Upcoming
-          </Text>
-        ) : (
-          <Text style={styles.sectionTitle}>Upcoming</Text>
-        )}
-        {events.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No upcoming events</Text>
-        ) : (
-          events.map((event, index) => (
-            <View key={index} style={styles.eventCard}>
-              <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
-              <View style={styles.eventDetails}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventTime}>
-                  {new Date(event.date).toLocaleDateString()} at {event.time}
-                </Text>
-                <Text style={styles.eventTitle}>{event.location}</Text>
+        <Text style={styles.sectionTitle}>Upcoming & Finished</Text>
+
+        <Animated.View style={{ opacity: fadeAnim }}>
+          {upcomingEvents.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No upcoming events</Text>
+          ) : (
+            upcomingEvents.map((event, index) => (
+              <View key={index} style={styles.eventCard}>
+                <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
+                <View style={styles.eventDetails}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventTime}>
+                    {new Date(event.date).toLocaleDateString()} at {event.time || 'Time not specified'}
+                  </Text>
+                  <Text style={styles.eventTitle}>{event.location}</Text>
+                </View>
               </View>
-            </View>
-          ))
-        )}
+            ))
+          )}
+
+          <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Finished Events</Text>
+
+          {finishedEvents.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No finished events</Text>
+          ) : (
+            finishedEvents.map((event, index) => (
+              <View key={index} style={[styles.eventCard, { backgroundColor: '#E5E7EB' }]}>
+                <MaterialCommunityIcons name="check-circle" size={24} color="#4B5563" />
+                <View style={styles.eventDetails}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventTime}>
+                    {new Date(event.date).toLocaleDateString()} at {event.time || 'Time not specified'}
+                  </Text>
+                  <Text style={styles.eventTitle}>{event.location}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </Animated.View>
       </View>
     </ScrollView>
   );
@@ -155,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '30%', // Adjusted to fit three in a row
+    width: '30%',
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
