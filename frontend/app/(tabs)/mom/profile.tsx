@@ -2,9 +2,40 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } fr
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 
 export default function ProfileScreen() {
-  const router = useRouter(); // For navigation
+  const router = useRouter();
+  const [user_email, setUserEmail] = useState('');
+  const [momDetails, setMomDetails] = useState({});
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      console.log("profile.tsx: " + email);
+      setUserEmail(email);
+    };
+    fetchEmail();
+  }, []);
+
+  const fetchMomDetails = async () => {
+    try {
+      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
+      const result = await response.json();
+
+      if (result.mom) {
+        setMomDetails(result.mom);
+      } else {
+        Alert.alert('Error', 'No mother details found.');
+      }
+    } catch (error) {
+      console.error('Error fetching child details:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMomDetails();
+  }, [user_email]);
 
   const handleLogout = async () => {
     try {
@@ -24,8 +55,8 @@ export default function ProfileScreen() {
           source={{ uri: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400' }}
           style={styles.profileImage}
         />
-        <Text style={styles.name}>Sarah Johnson</Text>
-        <Text style={styles.role}>Mother of Emma, 6 months</Text>
+        <Text style={styles.name}>{momDetails.name}</Text>
+        <Text style={styles.role}>Mother of {momDetails?.child?.name}</Text>
       </View>
 
       <View style={styles.section}>
@@ -36,9 +67,9 @@ export default function ProfileScreen() {
             style={styles.childImage}
           />
           <View style={styles.childInfo}>
-            <Text style={styles.childName}>Emma Johnson</Text>
-            <Text style={styles.childAge}>6 months old</Text>
-            <Text style={styles.childDob}>Born: July 15, 2023</Text>
+          <Text style={styles.childName}>{momDetails?.child?.name}{momDetails.hubname}</Text>
+          <Text style={styles.childAge}>6 months old</Text>
+            <Text style={styles.childDob}>{momDetails?.child?.age}</Text>
           </View>
         </View>
       </View>

@@ -3,6 +3,26 @@ const Mom = require('../models/Mom');
 
 const router = express.Router();
 
+router.get('/mom', async (req, res) => {
+  try {
+    const userEmail = req.query.email;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Email is required to fetch mom details.' });
+    }
+
+    const mom = await Mom.findOne({ email: userEmail }).lean();
+    if (!mom) {
+      return res.status(404).json({ error: 'Mom with the provided email was not found.' });
+    }
+
+    return res.status(200).json({ mom });
+  } catch (error) {
+    console.error('❌ Error fetching mom details:', error.message || error);
+    return res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+});
+
 router.get('/child', async (req, res) => {
   try {
     const userEmail = req.query.email;

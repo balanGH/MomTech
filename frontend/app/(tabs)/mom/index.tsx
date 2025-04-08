@@ -97,7 +97,7 @@ export default function HomeScreen() {
               <View style={styles.eventDetails}>
                 <Text style={styles.eventTitle}>{event.title}</Text>
                 <Text style={styles.eventTime}>
-                  {new Date(event.date).toLocaleDateString()} at {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(event.date).toLocaleDateString()} at {event.time}
                 </Text>
                 <Text style={styles.eventTitle}>{event.location}</Text>
               </View>
