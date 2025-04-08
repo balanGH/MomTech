@@ -3,10 +3,22 @@ import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function HomeScreen() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
+  const [user_email, setUserEmail] = useState('');
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      console.log("health.tsx: " + email);
+      setUserEmail(email);
+    };
+    fetchEmail();
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -69,7 +81,13 @@ export default function HomeScreen() {
         </View>
       </View>
       <View style={styles.upcomingSection}>
-        <Text style={styles.sectionTitle}>Upcoming</Text>
+        {user_email === 'admin@momtech.in' ? (
+          <Text style={styles.sectionTitle} onPress={() => router.push("../components/AdminAddEventScreen")}>
+            Upcoming
+          </Text>
+        ) : (
+          <Text style={styles.sectionTitle}>Upcoming</Text>
+        )}
         {events.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No upcoming events</Text>
         ) : (
@@ -90,7 +108,6 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
