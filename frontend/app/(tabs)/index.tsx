@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
-import DatePicker from 'react-native-date-picker';
-import {View, Text, TextInput, TouchableOpacity,StyleSheet, Image, ScrollView, SafeAreaView, Alert} from 'react-native';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,ScrollView,SafeAreaView,Alert,Platform,} from 'react-native';
 
 const Auth = () => {
   const [selectedMode, setSelectedMode] = useState(null);
@@ -26,35 +26,30 @@ const Auth = () => {
     fare: '',
   });
   const [errors, setErrors] = useState({});
-
   const router = useRouter();
 
   const IMAGES = {
     momLogo: 'https://cdn-icons-png.flaticon.com/512/3137/3137204.png',
     momIcon: 'https://cdn-icons-png.flaticon.com/512/3011/3011270.png',
     babysitterIcon: 'https://cdn-icons-png.flaticon.com/512/11449/11449901.png',
-    momHeart: 'https://cdn-icons-png.flaticon.com/512/1027/1027112.png'
+    momHeart: 'https://cdn-icons-png.flaticon.com/512/1027/1027112.png',
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
     if (!isLogin) {
       if (!formData.name) newErrors.name = 'Name is required';
       if (!formData.phone) newErrors.phone = 'Phone is required';
-      
       if (selectedMode === 'mom') {
         if (!formData.childName) newErrors.childName = "Child's name is required";
       } else {
@@ -63,7 +58,6 @@ const Auth = () => {
         if (!formData.address.city) newErrors.city = 'City is required';
       }
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,8 +90,8 @@ const Auth = () => {
 
   const handleInputChange = (name, value) => {
     if (name.includes('address.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
+      const [, child] = name.split('.');
+      setFormData((prev) => ({
         ...prev,
         address: {
           ...prev.address,
@@ -105,26 +99,23 @@ const Auth = () => {
         },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
     }
-    
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleAuthAction = async () => {
     if (!validateForm()) return;
-  
     try {
       const url = isLogin
-        ? 'http://10.21.76.182:5000/auth/login'
-        : `http://10.21.76.182:5000/auth/register/${selectedMode}`;
-  
-      // Construct payload based on login/register logic
+        ? 'http://10.16.48.219:5000/auth/login'
+        : `http://10.16.48.219:5000/auth/register/${selectedMode}`;
+
       const payload = {
         email: formData.email,
         password: formData.password,
@@ -140,9 +131,9 @@ const Auth = () => {
           address: formData.address,
         }),
       };
-  
+
       const response = await axios.post(url, payload);
-  
+
       if (isLogin) {
         await AsyncStorage.multiSet([
           ['token', response.data.token],
@@ -150,30 +141,24 @@ const Auth = () => {
           ['email', formData.email],
           ['name', response.data.name || formData.name],
         ]);
-  
-        if (selectedMode === 'babysitter') {
-          router.replace('/babysitter/');
-        } else {
-          router.replace('/mom/');
-        }
+        router.replace(selectedMode === 'babysitter' ? '/babysitter/' : '/mom/');
       } else {
-        // Show success alert on registration
-        const successMessage =
+        Alert.alert(
+          'Success',
           selectedMode === 'mom'
             ? 'Mom account created successfully!'
-            : 'Babysitter registration submitted!';
-        Alert.alert('Success', successMessage, [
-          { text: 'OK', onPress: () => setIsLogin(true) },
-        ]);
+            : 'Babysitter registration submitted!',
+          [{ text: 'OK', onPress: () => setIsLogin(true) }]
+        );
       }
     } catch (error) {
       console.error('Auth error:', error);
-      const errorMessage =
-        error?.response?.data?.error || error.message || 'Something went wrong';
-      Alert.alert('Error', errorMessage);
+      Alert.alert(
+        'Error',
+        error?.response?.data?.error || error.message || 'Something went wrong'
+      );
     }
   };
-  
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
@@ -186,17 +171,15 @@ const Auth = () => {
         <Image source={{ uri: IMAGES.momLogo }} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>Welcome to MomCare</Text>
         <Text style={styles.subtitle}>Choose your mode to continue</Text>
-        
-        <TouchableOpacity 
-          style={[styles.modeButton, {backgroundColor: '#FF85A2'}]}
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: '#FF85A2' }]}
           onPress={() => handleModeSelect('mom')}
         >
           <Image source={{ uri: IMAGES.momIcon }} style={styles.modeIcon} resizeMode="contain" />
           <Text style={styles.modeText}>I'm a Mom</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.modeButton, {backgroundColor: '#7EC4CF'}]}
+        <TouchableOpacity
+          style={[styles.modeButton, { backgroundColor: '#7EC4CF' }]}
           onPress={() => handleModeSelect('babysitter')}
         >
           <Image source={{ uri: IMAGES.babysitterIcon }} style={styles.modeIcon} resizeMode="contain" />
@@ -209,15 +192,15 @@ const Auth = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.authContainer}>
-        <Image 
-          source={{ uri: selectedMode === 'mom' ? IMAGES.momHeart : IMAGES.babysitterIcon }} 
-          style={styles.authLogo} 
+        <Image
+          source={{ uri: selectedMode === 'mom' ? IMAGES.momHeart : IMAGES.babysitterIcon }}
+          style={styles.authLogo}
           resizeMode="contain"
         />
         <Text style={styles.authTitle}>
           {isLogin ? 'Welcome Back!' : selectedMode === 'mom' ? 'Join Our Mom Community' : 'Babysitter Registration'}
         </Text>
-        
+
         {!isLogin && (
           <>
             <TextInput
@@ -229,7 +212,7 @@ const Auth = () => {
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
           </>
         )}
-        
+
         <TextInput
           style={[styles.input, errors.email && styles.errorInput]}
           placeholder="Email"
@@ -239,7 +222,7 @@ const Auth = () => {
           autoCapitalize="none"
         />
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-        
+
         <TextInput
           style={[styles.input, errors.password && styles.errorInput]}
           placeholder="Password"
@@ -248,7 +231,7 @@ const Auth = () => {
           onChangeText={(text) => handleInputChange('password', text)}
         />
         {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-        
+
         {!isLogin && (
           <>
             <TextInput
@@ -261,7 +244,7 @@ const Auth = () => {
             {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
           </>
         )}
-        
+
         {!isLogin && selectedMode === 'mom' && (
           <>
             <TextInput
@@ -271,29 +254,30 @@ const Auth = () => {
               onChangeText={(text) => handleInputChange('childName', text)}
             />
             {errors.childName && <Text style={styles.errorText}>{errors.childName}</Text>}
-            
+
             <TouchableOpacity
-              style={[styles.input, errors.childDOB && styles.errorInput]}
+              style={[styles.input, { justifyContent: 'center' }]}
               onPress={() => setIsDatePickerVisible(true)}
             >
-              <Text>
-                {formData.childDOB.toDateString() || 'Select Child Date of Birth'}
-              </Text>
+              <Text>{formData.childDOB.toDateString()}</Text>
             </TouchableOpacity>
-            
-            <DatePicker
-              modal
-              open={isDatePickerVisible}
-              date={formData.childDOB}
-              onConfirm={(date) => {
-                handleInputChange('childDOB', date);
-                setIsDatePickerVisible(false);
-              }}
-              onCancel={() => setIsDatePickerVisible(false)}
-            />
+
+            {isDatePickerVisible && (
+              <DateTimePicker
+                value={formData.childDOB || new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "default"}
+                onChange={(event, date) => {
+                  if (date) {
+                    handleInputChange('childDOB', date);
+                  }
+                  setIsDatePickerVisible(false);
+                }}
+              />
+            )}
           </>
         )}
-        
+
         {!isLogin && selectedMode === 'babysitter' && (
           <>
             <TextInput
@@ -304,9 +288,9 @@ const Auth = () => {
               onChangeText={(text) => handleInputChange('fare', text)}
             />
             {errors.fare && <Text style={styles.errorText}>{errors.fare}</Text>}
-            
+
             <Text style={styles.sectionHeader}>Address Information</Text>
-            
+
             <TextInput
               style={[styles.input, errors.street && styles.errorInput]}
               placeholder="Street Address"
@@ -314,7 +298,7 @@ const Auth = () => {
               onChangeText={(text) => handleInputChange('address.street', text)}
             />
             {errors.street && <Text style={styles.errorText}>{errors.street}</Text>}
-            
+
             <TextInput
               style={[styles.input, errors.city && styles.errorInput]}
               placeholder="City"
@@ -322,21 +306,19 @@ const Auth = () => {
               onChangeText={(text) => handleInputChange('address.city', text)}
             />
             {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
-            
+
             <TextInput
               style={styles.input}
               placeholder="District"
               value={formData.address.dist}
               onChangeText={(text) => handleInputChange('address.dist', text)}
             />
-            
             <TextInput
               style={styles.input}
               placeholder="State"
               value={formData.address.state}
               onChangeText={(text) => handleInputChange('address.state', text)}
             />
-            
             <TextInput
               style={styles.input}
               placeholder="Country"
@@ -345,24 +327,16 @@ const Auth = () => {
             />
           </>
         )}
-        
+
         <TouchableOpacity style={styles.authButton} onPress={handleAuthAction}>
           <Text style={styles.authButtonText}>{isLogin ? 'Login' : 'Sign Up'}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity onPress={toggleAuthMode}>
           <Text style={styles.toggleAuthText}>
-            {isLogin 
-              ? "Don't have an account? Sign Up" 
-              : "Already have an account? Login"}
+            {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
           </Text>
         </TouchableOpacity>
-        
-        {selectedMode === 'mom' && (
-          <Text style={styles.heartwarmingText}>
-            "Because every mom deserves a helping hand ❤️"
-          </Text>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -477,5 +451,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
 export default Auth;
