@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AdminAddEventScreen = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [time, setTime] = useState(new Date());
   const [location, setLocation] = useState('');
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
 
   const handleSubmit = async () => {
     if (!title || !date || !location) {
@@ -13,18 +17,22 @@ const AdminAddEventScreen = () => {
       return;
     }
 
+    const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // HH:MM AM/PM
+
     try {
-      const response = await fetch('http://10.21.76.182:5000/admin/addevent', {
+      const response = await fetch('http://10.16.48.219:5000/admin/addevent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, date, location }),
+        body: JSON.stringify({ title, description, date: formattedDate, time: formattedTime, location }),
       });
 
       if (response.ok) {
         Alert.alert('Success', 'Event added successfully!');
         setTitle('');
         setDescription('');
-        setDate('');
+        setDate(new Date());
+        setTime(new Date());
         setLocation('');
       } else {
         Alert.alert('Error', 'Failed to add event.');
@@ -53,12 +61,43 @@ const AdminAddEventScreen = () => {
         onChangeText={setDescription}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Date (YYYY-MM-DD) *"
-        value={date}
-        onChangeText={setDate}
-      />
+      {/* Date Picker */}
+      <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setIsDatePickerVisible(true)}>
+        <Text>{date.toISOString().split('T')[0]}</Text>
+      </TouchableOpacity>
+
+      {isDatePickerVisible && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onChange={(event, selectedDate) => {
+            if (selectedDate) {
+              setDate(selectedDate);
+            }
+            setIsDatePickerVisible(false);
+          }}
+        />
+      )}
+
+      {/* Time Picker */}
+      <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setIsTimePickerVisible(true)}>
+        <Text>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+      </TouchableOpacity>
+
+      {isTimePickerVisible && (
+        <DateTimePicker
+          value={time}
+          mode="time"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onChange={(event, selectedTime) => {
+            if (selectedTime) {
+              setTime(selectedTime);
+            }
+            setIsTimePickerVisible(false);
+          }}
+        />
+      )}
 
       <TextInput
         style={styles.input}
