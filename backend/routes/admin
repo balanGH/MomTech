@@ -1,13 +1,13 @@
-// admin.js
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
-// MongoDB Schema for Events
+// MongoDB Schema for Events (Now includes a time field)
 const eventSchema = new mongoose.Schema({
   title: String,
   description: String,
   date: Date,
+  time: String,
   location: String,
 });
 
@@ -15,10 +15,10 @@ const Event = mongoose.model('Event', eventSchema);
 
 // Admin Add Event Route
 router.post('/addevent', async (req, res) => {
-  const { title, description, date, location } = req.body;
+  const { title, description, date, time, location } = req.body;
 
-  if (!title || !date || !location) {
-    return res.status(400).json({ error: 'Missing required fields.' });
+  if (!title || !date || !time || !location) {
+    return res.status(400).json({ error: 'Missing required fields (title, date, time, location).' });
   }
 
   try {
@@ -26,17 +26,19 @@ router.post('/addevent', async (req, res) => {
       title,
       description,
       date: new Date(date),
+      time,
       location,
     });
 
     await newEvent.save();
     res.status(200).json({ message: 'Event added successfully!' });
   } catch (error) {
-    console.error('Error adding event:', error);
-    res.status(500).json({ error: 'Server error.' });
+    console.error('❌ Error adding event:', error.message || error);
+    res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 });
 
+// Fetch Upcoming Events
 router.get('/events', async (req, res) => {
   try {
     const events = await Event.find({}).sort({ date: 1 });
