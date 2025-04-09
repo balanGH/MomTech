@@ -29,7 +29,7 @@ app.use('/babysitters', babysitterRoutes);
 app.use('/admin', adminRoutes);
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`💾 MongoDB running on ${MONGO_URI}`);
 });

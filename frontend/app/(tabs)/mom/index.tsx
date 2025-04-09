@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Animated } from 'react-native';
-import { useRouter } from "expo-router";
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking} from 'react-native';
+import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,17 +9,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
   const [user_email, setUserEmail] = useState('');
-  const [momDetails, setMomDetails] = useState({});
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500, 
-      useNativeDriver: true,
-    }).start();
-  }, [events]);
+  const [activeCategory, setActiveCategory] = useState('upcoming');
 
   useEffect(() => {
     const fetchEmail = async () => {
@@ -38,43 +28,30 @@ export default function HomeScreen() {
         console.error('Error fetching events:', error.message || error);
       }
     };
-  
+
     fetchEvents();
   }, []);
-
-  const fetchMomDetails = async () => {
-    try {
-      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
-      const result = await response.json();
-
-      if (result.mom) {
-        setMomDetails(result.mom);
-      } else {
-        Alert.alert('Error', 'No mother details found.');
-      }
-    } catch (error) {
-      console.error('Error fetching mom details:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (user_email) {
-      fetchMomDetails();
-    }
-  }, [user_email]);
 
   const today = new Date();
   const upcomingEvents = events.filter(event => new Date(event.date) > today);
   const finishedEvents = events.filter(event => new Date(event.date) <= today);
 
+  const handleToggleCategory = () => {
+    setActiveCategory(prev => (prev === 'upcoming' ? 'finished' : 'upcoming'));
+  };
+
+  const filteredEvents = activeCategory === 'upcoming' ? upcomingEvents : finishedEvents;
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
         <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=800' }}
+          source={{
+            uri: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=800',
+          }}
           style={styles.headerImage}
         />
-        <Text style={styles.welcomeText}>Welcome, {momDetails.name}!</Text>
+        <Text style={styles.welcomeText}>Welcome, Sarah!</Text>
         <Text style={styles.subtitle}>How can I help you today?</Text>
       </View>
 
@@ -91,7 +68,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("../components/nutrienttracker")}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')} >
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -99,52 +76,75 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="bell" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Reminders</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard}>
+        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard} >
           <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Chat with AI</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.upcomingSection}>
-        <Text style={styles.sectionTitle}>Upcoming & Finished</Text>
+      <View style={styles.aiSection}>
+        <Text style={styles.sectionTitle}>AI Insights</Text>
+        <View style={styles.insightCard}>
+          <MaterialCommunityIcons name="lightbulb-on" size={24} color="#7C3AED" />
+          <Text style={styles.insightText}>
+            Based on Emma's sleep pattern, try adjusting bedtime to 7:30 PM for better rest.
+          </Text>
+        </View>
+      </View>
 
-        <Animated.View style={{ opacity: fadeAnim }}>
-          {upcomingEvents.length === 0 ? (
-            <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No upcoming events</Text>
+      <View style={styles.eventsSection}>
+        <View style={styles.eventsHeader}>
+          {activeCategory === 'upcoming' ? (
+            user_email === 'admin@momtech.in' ? (
+              <Text
+                style={styles.sectionTitle}
+                onPress={() => router.push("../components/AdminAddEventScreen")}
+              >
+                Upcoming Events
+              </Text>
+            ) : (
+              <Text style={styles.sectionTitle}>Upcoming Events</Text>
+            )
           ) : (
-            upcomingEvents.map((event, index) => (
-              <View key={index} style={styles.eventCard}>
-                <MaterialCommunityIcons name="needle" size={24} color="#7C3AED" />
+            <Text style={styles.sectionTitle}>Finished Events</Text>
+          )}
+          <TouchableOpacity onPress={handleToggleCategory}>
+            <Text style={styles.toggleText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+
+        {filteredEvents.length === 0 ? (
+          <Text style={styles.noEventsText}>No events available</Text>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.eventsContainer}
+          >
+            {filteredEvents.map((event, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.eventCard,
+                  activeCategory === 'finished' && styles.finishedEventCard,
+                ]}
+              >
+                {activeCategory === 'upcoming' ? (
+                  <MaterialCommunityIcons name="calendar" size={24} color="#7C3AED" />
+                ) : (
+                  <MaterialCommunityIcons name="check-circle" size={24} color="#4B5563" />
+                )}
                 <View style={styles.eventDetails}>
                   <Text style={styles.eventTitle}>{event.title}</Text>
                   <Text style={styles.eventTime}>
-                    {new Date(event.date).toLocaleDateString()} at {event.time || 'Time not specified'}
+                    {new Date(event.date).toLocaleDateString()} {event.time ? `at ${event.time}` : ''}
                   </Text>
-                  <Text style={styles.eventTitle}>{event.location}</Text>
+                  <Text style={styles.eventLocation}>{event.location}</Text>
                 </View>
               </View>
-            ))
-          )}
-
-          <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Finished Events</Text>
-
-          {finishedEvents.length === 0 ? (
-            <Text style={{ textAlign: 'center', marginTop: 10, color: '#6B7280' }}>No finished events</Text>
-          ) : (
-            finishedEvents.map((event, index) => (
-              <View key={index} style={[styles.eventCard, { backgroundColor: '#E5E7EB' }]}>
-                <MaterialCommunityIcons name="check-circle" size={24} color="#4B5563" />
-                <View style={styles.eventDetails}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventTime}>
-                    {new Date(event.date).toLocaleDateString()} at {event.time || 'Time not specified'}
-                  </Text>
-                  <Text style={styles.eventTitle}>{event.location}</Text>
-                </View>
-              </View>
-            ))
-          )}
-        </Animated.View>
+            ))}
+          </ScrollView>
+        )}
       </View>
     </ScrollView>
   );
@@ -215,11 +215,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
+    textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 12,
-    textAlign: 'center',
   },
   insightCard: {
     backgroundColor: '#fff',
@@ -232,6 +231,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    marginTop: 8,
   },
   insightText: {
     flex: 1,
@@ -239,13 +239,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4B5563',
   },
-  upcomingSection: {
+  eventsSection: {
     padding: 20,
+  },
+  eventsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  toggleText: {
+    fontSize: 16,
+    color: '#7C3AED',
+    fontWeight: '600',
+  },
+  eventsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
   },
   eventCard: {
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
+    width: 250,
+    marginRight: 16,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
@@ -253,6 +270,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  finishedEventCard: {
+    backgroundColor: '#E5E7EB',
   },
   eventDetails: {
     marginLeft: 12,
@@ -263,8 +283,19 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   eventTime: {
-    fontSize: 15,
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  eventLocation: {
+    fontSize: 14,
     color: '#6B7280',
     marginTop: 2,
+  },
+  noEventsText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });

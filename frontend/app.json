@@ -31,7 +31,10 @@
       }
     },
     "android": {
-      "package": "com.expo_user_bjl.boltexponativewind"
+      "package": "com.expo_user_bjl.boltexponativewind",
+      "permissions": [
+        "INTERNET"
+      ]
     },
     "owner": "expo_user_bjl"
   }
