@@ -35,7 +35,7 @@ export default function HomeScreen() {
 
   const fetchMomDetails = async () => {
     try {
-      const response = await fetch(`http://10.16.49.71:5000/mom/mom?email=${user_email}`);
+      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
       const result = await response.json();
 
       if (result.mom) {
