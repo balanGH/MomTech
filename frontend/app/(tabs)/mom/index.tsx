@@ -4,11 +4,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {baseURL} from '@/app/api/api';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
   const [user_email, setUserEmail] = useState('');
+  const [momDetails, setMomDetails] = useState({});
   const [activeCategory, setActiveCategory] = useState('upcoming');
 
   useEffect(() => {
@@ -32,6 +34,27 @@ export default function HomeScreen() {
     fetchEvents();
   }, []);
 
+  const fetchMomDetails = async () => {
+    try {
+      const response = await fetch(`http://10.16.49.71:5000/mom/mom?email=${user_email}`);
+      const result = await response.json();
+
+      if (result.mom) {
+        setMomDetails(result.mom);
+      } else {
+        Alert.alert('Error', 'No mother details found.');
+      }
+    } catch (error) {
+      console.error('Error fetching mom details:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user_email) {
+      fetchMomDetails();
+    }
+  }, [user_email]);
+
   const today = new Date();
   const upcomingEvents = events.filter(event => new Date(event.date) > today);
   const finishedEvents = events.filter(event => new Date(event.date) <= today);
@@ -51,7 +74,7 @@ export default function HomeScreen() {
           }}
           style={styles.headerImage}
         />
-        <Text style={styles.welcomeText}>Welcome, Sarah!</Text>
+        <Text style={styles.welcomeText}>Welcome, {momDetails.name}!</Text>
         <Text style={styles.subtitle}>How can I help you today?</Text>
       </View>
 
