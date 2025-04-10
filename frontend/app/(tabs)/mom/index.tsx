@@ -4,7 +4,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {baseURL} from '@/app/api/api';
 
 export default function HomeScreen() {
   const router = useRouter();
