@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, ScrollView, Dimensions, TextInput, Button, Aler
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '@/api/base_api';
 
 export default function HealthScreen() {
+  const [childName , setchildName] = useState ('')
   const [healthOverview, setHealthOverview] = useState([]);
   const [healthConditions, setHealthConditions] = useState([]);
   const [newWeight, setNewWeight] = useState('');
@@ -15,21 +17,38 @@ export default function HealthScreen() {
 
   useEffect(() => {
     const fetchEmail = async () => {
-      const email = await AsyncStorage.getItem('email');
-      setUserEmail(email);
+      try {
+        const email = await AsyncStorage.getItem('email');
+        if (email) {
+          setUserEmail(email);
+        } else {
+          console.warn('No email found in AsyncStorage.');
+        }
+      } catch (error) {
+        console.error('Error fetching email from AsyncStorage:', error);
+      }
     };
     fetchEmail();
   }, []);
 
   const fetchChildDetails = async () => {
-    try {
-      const response = await fetch(`http://10.16.48.219:5000/mom/child?email=${user_email}`);
-      const result = await response.json();
+    if (!user_email) return;
 
-      if (result.child) {
-        const sortedOverview = (result.child.healthoverview || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-        setHealthOverview(sortedOverview);
-        setHealthConditions(result.child.medicalcondition?.allergy || []);
+    try {
+      const response = await apiClient.get(`/mom/child?email=${user_email}`);
+      if (response.status === 200) {
+        const result = response.data;
+
+        if (result.child) {
+          setchildName(result.child.name)
+          const sortedOverview = (result.child.healthoverview || []).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+          setHealthOverview(sortedOverview);
+          setHealthConditions(result.child.medicalcondition?.allergy || []);
+        }
+      } else {
+        console.error('Failed to fetch child details:', response.status);
       }
     } catch (error) {
       console.error('Error fetching child details:', error);
@@ -37,6 +56,11 @@ export default function HealthScreen() {
   };
 
   const updateHealthOverview = async () => {
+    if (!user_email) {
+      Alert.alert('Error', 'User email is not available.');
+      return;
+    }
+
     const newEntry = {
       date: new Date().toISOString(),
       weight: newWeight,
@@ -45,14 +69,13 @@ export default function HealthScreen() {
     };
 
     try {
-      const response = await fetch(`http://10.16.48.219:5000/mom/childupdate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user_email, healthoverview: newEntry }),
+      const response = await apiClient.post(`/mom/childupdate`, {
+        email: user_email,
+        healthoverview: newEntry,
       });
 
-      if (response.ok) {
-        setHealthOverview((prev) => [...prev, newEntry].sort((a, b) => new Date(a.date) - new Date(b.date)));
+      if (response.status === 200) {
+        setHealthOverview((prev) => [...prev, newEntry].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
         Alert.alert('Success', 'Health overview updated successfully!');
         setNewWeight('');
         setNewHeight('');
@@ -78,7 +101,7 @@ export default function HealthScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Health Overview</Text>
+        <Text style={styles.sectionTitle}>❤️ {childName}'s Health Overview</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <MaterialCommunityIcons name="weight" size={24} color="#7C3AED" />

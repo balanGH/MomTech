@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import apiClient from '@/api/base_api';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   return (
     <ScrollView style={styles.container}>
       <View style={styles.welcomeSection}>
@@ -28,7 +30,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('/components/nutrienttracker')}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>

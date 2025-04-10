@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import apiClient from '@/api/base_api';
 
 const AdminAddEventScreen = () => {
   const [title, setTitle] = useState('');
@@ -18,16 +19,18 @@ const AdminAddEventScreen = () => {
     }
 
     const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // HH:MM AM/PM
+    const formattedTime = time.toTimeString().split(' ')[0]; // HH:MM:SS
 
     try {
-      const response = await fetch('http://10.16.48.219:5000/admin/addevent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, date: formattedDate, time: formattedTime, location }),
+      const response = await apiClient.post('/admin/addevent', {
+        title,
+        description,
+        date: formattedDate,
+        time: formattedTime,
+        location,
       });
 
-      if (response.ok) {
+      if (response.status === 200) {
         Alert.alert('Success', 'Event added successfully!');
         setTitle('');
         setDescription('');
@@ -35,11 +38,11 @@ const AdminAddEventScreen = () => {
         setTime(new Date());
         setLocation('');
       } else {
-        Alert.alert('Error', 'Failed to add event.');
+        Alert.alert('Error', response.data?.error || 'Failed to add event.');
       }
     } catch (error) {
       console.error('Error adding event:', error);
-      Alert.alert('Error', 'Something went wrong.');
+      Alert.alert('Error', error.message || 'Something went wrong.');
     }
   };
 
@@ -61,7 +64,6 @@ const AdminAddEventScreen = () => {
         onChangeText={setDescription}
       />
 
-      {/* Date Picker */}
       <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setIsDatePickerVisible(true)}>
         <Text>{date.toISOString().split('T')[0]}</Text>
       </TouchableOpacity>
@@ -80,9 +82,8 @@ const AdminAddEventScreen = () => {
         />
       )}
 
-      {/* Time Picker */}
       <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setIsTimePickerVisible(true)}>
-        <Text>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+        <Text>{time.toTimeString().split(' ')[0]}</Text>
       </TouchableOpacity>
 
       {isTimePickerVisible && (

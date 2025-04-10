@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,ScrollView,SafeAreaView,Alert,Platform,} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, SafeAreaView, Alert, Platform, ActivityIndicator } from 'react-native';
+import apiClient from '@/api/base_api';
 
 const Auth = () => {
   const [selectedMode, setSelectedMode] = useState(null);
@@ -26,6 +27,7 @@ const Auth = () => {
     fare: '',
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true); // Added loading state
   const router = useRouter();
 
   const IMAGES = {
@@ -34,6 +36,27 @@ const Auth = () => {
     babysitterIcon: 'https://cdn-icons-png.flaticon.com/512/11449/11449901.png',
     momHeart: 'https://cdn-icons-png.flaticon.com/512/1027/1027112.png',
   };
+
+  // Check userType in AsyncStorage on component mount
+  useEffect(() => {
+    const checkUserType = async () => {
+      try {
+        const userType = await AsyncStorage.getItem('userType');
+        if (userType === 'mom') {
+          router.replace('/mom');
+        } else if (userType === 'babysitter') {
+          router.replace('/babysitter');
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking userType in AsyncStorage:', error);
+        setLoading(false);
+      }
+    };
+
+    checkUserType();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -113,8 +136,8 @@ const Auth = () => {
     if (!validateForm()) return;
     try {
       const url = isLogin
-        ? 'http://10.16.48.219:5000/auth/login'
-        : `http://10.16.48.219:5000/auth/register/${selectedMode}`;
+        ? `/auth/login`
+        : `/auth/register/${selectedMode}`;
 
       const payload = {
         email: formData.email,
@@ -132,7 +155,7 @@ const Auth = () => {
         }),
       };
 
-      const response = await axios.post(url, payload);
+      const response = await apiClient.post(url, payload);
       console.log('Auth response:', response);
 
       if (isLogin) {
@@ -142,7 +165,7 @@ const Auth = () => {
           ['email', formData.email],
           ['name', response.data.name || formData.name],
         ]);
-        router.replace(selectedMode === 'babysitter' ? '/babysitter/' : '/mom/');
+        router.replace(selectedMode === 'babysitter' ? '/babysitter' : '/mom');
       } else {
         Alert.alert(
           'Success',
@@ -165,6 +188,14 @@ const Auth = () => {
     setIsLogin(!isLogin);
     resetForm();
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#FF85A2" />
+      </SafeAreaView>
+    );
+  }
 
   if (!selectedMode) {
     return (
@@ -452,4 +483,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 export default Auth;

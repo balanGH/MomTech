@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '@/api/base_api';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -14,8 +14,16 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchEmail = async () => {
-      const email = await AsyncStorage.getItem('email');
-      setUserEmail(email);
+      try {
+        const email = await AsyncStorage.getItem('email');
+        if (email) {
+          setUserEmail(email);
+        } else {
+          console.warn('No email found in AsyncStorage.');
+        }
+      } catch (error) {
+        console.error('Error fetching email from AsyncStorage:', error);
+      }
     };
     fetchEmail();
   }, []);
@@ -23,8 +31,12 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://10.16.48.219:5000/admin/events');
-        setEvents(response.data.events);
+        const response = await apiClient.get('/admin/events');
+        if (response.status === 200) {
+          setEvents(response.data.events || []);
+        } else {
+          console.warn('Failed to fetch events:', response.statusText);
+        }
       } catch (error) {
         console.error('Error fetching events:', error.message || error);
       }
@@ -35,13 +47,11 @@ export default function HomeScreen() {
 
   const fetchMomDetails = async () => {
     try {
-      const response = await fetch(`http://10.16.48.219:5000/mom/mom?email=${user_email}`);
-      const result = await response.json();
-
-      if (result.mom) {
-        setMomDetails(result.mom);
+      const response = await apiClient.get(`/mom/mom?email=${user_email}`);
+      if (response.status === 200 && response.data.mom) {
+        setMomDetails(response.data.mom);
       } else {
-        Alert.alert('Error', 'No mother details found.');
+        alert('Error: No mother details found.');
       }
     } catch (error) {
       console.error('Error fetching mom details:', error);
@@ -73,7 +83,7 @@ export default function HomeScreen() {
           }}
           style={styles.headerImage}
         />
-        <Text style={styles.welcomeText}>Welcome, {momDetails.name}!</Text>
+        <Text style={styles.welcomeText}>Welcome, {momDetails.name || 'Guest'}!</Text>
         <Text style={styles.subtitle}>How can I help you today?</Text>
       </View>
 
@@ -90,7 +100,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')} >
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -98,7 +108,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="bell" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Reminders</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard} >
+        <TouchableOpacity onPress={() => Linking.openURL('tg://resolve?domain=MomTechBot')} style={styles.actionCard}>
           <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Chat with AI</Text>
         </TouchableOpacity>
@@ -120,7 +130,7 @@ export default function HomeScreen() {
             user_email === 'admin@momtech.in' ? (
               <Text
                 style={styles.sectionTitle}
-                onPress={() => router.push("../components/AdminAddEventScreen")}
+                onPress={() => router.push('../components/AdminAddEventScreen')}
               >
                 Upcoming Events
               </Text>

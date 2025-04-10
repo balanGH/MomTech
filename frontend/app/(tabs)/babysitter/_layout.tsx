@@ -25,42 +25,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="babysitters"
-        options={{
-          title: 'Babysitters',
-          headerTitle: 'Find Babysitters',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="account-search" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="babysitterverify"
         options={{
           title: 'Babysitter Verify',
           headerTitle: 'Babysitter Verification',
           tabBarIcon: ({ size, color }) => (
             <MaterialCommunityIcons name="form-select" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="health"
-        options={{
-          title: 'Health',
-          headerTitle: 'Health Tracking',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="heart-pulse" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="schedule"
-        options={{
-          title: 'Schedule',
-          headerTitle: 'Daily Schedule',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="calendar-clock" size={size} color={color} />
           ),
         }}
       />

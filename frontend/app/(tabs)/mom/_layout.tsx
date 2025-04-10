@@ -35,16 +35,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="babysitterverify"
-        options={{
-          title: 'Babysitter Verify',
-          headerTitle: 'Babysitter Verification',
-          tabBarIcon: ({ size, color }) => (
-            <MaterialCommunityIcons name="form-select" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="health"
         options={{
           title: 'Health',

@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from '@/api/base_api';
 
 export default function BabysitterVerificationScreen() {
   const [documents, setDocuments] = useState({
@@ -30,9 +30,8 @@ export default function BabysitterVerificationScreen() {
   
   const checkVerificationStatus = async (email) => {
     try {
-      const response = await fetch(`http://10.16.48.219:5000/babysitters/check-verification?email=${email}`);
-      const result = await response.json();
-      if (response.ok && result.verified) {
+      const response = await apiClient.get(`/babysitters/check-verification?email=${email}`);
+      if (response.status === 200 && response.data.verified) {
         setIsVerified(true);
       }
     } catch (error) {
@@ -94,17 +93,17 @@ export default function BabysitterVerificationScreen() {
     formData.append('email', user_email);
 
     try {
-      const response = await fetch('http://10.16.48.219:5000/upload', {
-        method: 'POST',
-        body: formData,
+      const response = await apiClient.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
       });
 
-      const result = await response.json();
-      if (response.ok) {
+      if (response.status === 200) {
         setIsVerified(true);
         Alert.alert('Success', 'Verification successful!');
       } else {
-        Alert.alert('Error', result.error || 'Failed to upload documents.');
+        Alert.alert('Error', response.data.error || 'Failed to upload documents.');
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'An error occurred while uploading.');
