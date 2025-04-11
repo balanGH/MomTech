@@ -1,209 +1,232 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import apiBot from '@/api/bot_api';
 
-export default function ScheduleScreen() {
+interface FormState {
+  sleep_duration: string;
+  sleep_quality: string;
+  exercise_duration: string;
+  exercise_type: string;
+  water_intake: string;
+  pain_level: string;
+  stress_level: string;
+  mood: string;
+  meals_logged: string;
+  breastfeeding_done: string;
+}
+
+interface ResultState {
+  wellness_score: number;
+  message: string;
+}
+
+const PredictScreen: React.FC = () => {
+  const [form, setForm] = useState<FormState>({
+    sleep_duration: '',
+    sleep_quality: '',
+    exercise_duration: '',
+    exercise_type: 'None',
+    water_intake: '',
+    pain_level: '',
+    stress_level: '',
+    mood: 'Neutral',
+    meals_logged: '',
+    breastfeeding_done: 'No',
+  });
+
+  const [result, setResult] = useState<ResultState | null>(null);
+
+  const predictWellness = async () => {
+    try {
+      const payload = {
+        ...form,
+        sleep_duration: parseFloat(form.sleep_duration),
+        sleep_quality: parseInt(form.sleep_quality),
+        exercise_duration: parseInt(form.exercise_duration),
+        water_intake: parseInt(form.water_intake),
+        pain_level: parseInt(form.pain_level),
+        stress_level: parseInt(form.stress_level),
+        meals_logged: parseInt(form.meals_logged),
+        exercise_type: form.exercise_type === 'None' ? 0 : form.exercise_type === 'Stretching' ? 1 : 2,
+        mood: form.mood === 'Sad' ? 0 : form.mood === 'Neutral' ? 1 : 2,
+      };
+
+      const response = await apiBot.post(`/predict`, payload);
+      console.log('Response:', response.data);
+      setResult(response.data);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to fetch prediction. Ensure the backend is running.';
+      Alert.alert('Error', errorMessage);
+      console.error(error);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.dateHeader}>
-        <TouchableOpacity>
-          <MaterialCommunityIcons name="chevron-left" size={24} color="#4B5563" />
-        </TouchableOpacity>
-        <Text style={styles.dateText}>Today, January 15</Text>
-        <TouchableOpacity>
-          <MaterialCommunityIcons name="chevron-right" size={24} color="#4B5563" />
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.label}>Sleep Duration (hours):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.sleep_duration}
+        onChangeText={(text) => setForm({ ...form, sleep_duration: text })}
+        keyboardType="numeric"
+        placeholder="e.g., 6.5"
+        accessibilityLabel="Sleep Duration Input"
+      />
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Feeding Schedule</Text>
-        <View style={styles.timelineContainer}>
-          <View style={styles.timelineItem}>
-            <View style={styles.timeColumn}>
-              <Text style={styles.timeText}>7:00 AM</Text>
-            </View>
-            <View style={styles.contentColumn}>
-              <View style={[styles.eventCard, { borderLeftColor: '#7C3AED' }]}>
-                <MaterialCommunityIcons name="baby-bottle" size={20} color="#7C3AED" />
-                <Text style={styles.eventText}>Morning Feed</Text>
-                <Text style={styles.eventDetails}>180ml Formula</Text>
-              </View>
-            </View>
-          </View>
+      <Text style={styles.label}>Sleep Quality (1-5):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.sleep_quality}
+        onChangeText={(text) => setForm({ ...form, sleep_quality: text })}
+        keyboardType="numeric"
+        placeholder="1 (worst) to 5 (best)"
+        accessibilityLabel="Sleep Quality Input"
+      />
 
-          <View style={styles.timelineItem}>
-            <View style={styles.timeColumn}>
-              <Text style={styles.timeText}>11:00 AM</Text>
-            </View>
-            <View style={styles.contentColumn}>
-              <View style={[styles.eventCard, { borderLeftColor: '#059669' }]}>
-                <MaterialCommunityIcons name="food-apple" size={20} color="#059669" />
-                <Text style={styles.eventText}>Snack Time</Text>
-                <Text style={styles.eventDetails}>Mashed Banana</Text>
-              </View>
-            </View>
-          </View>
+      <Text style={styles.label}>Exercise Duration (mins):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.exercise_duration}
+        onChangeText={(text) => setForm({ ...form, exercise_duration: text })}
+        keyboardType="numeric"
+        placeholder="e.g., 30"
+        accessibilityLabel="Exercise Duration Input"
+      />
+
+      <Text style={styles.label}>Exercise Type:</Text>
+      <Picker
+        selectedValue={form.exercise_type}
+        style={styles.picker}
+        onValueChange={(itemValue) => setForm({ ...form, exercise_type: itemValue })}
+      >
+        <Picker.Item label="None" value="None" />
+        <Picker.Item label="Stretching" value="Stretching" />
+        <Picker.Item label="Walk" value="Walk" />
+      </Picker>
+
+      <Text style={styles.label}>Water Intake (glasses):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.water_intake}
+        onChangeText={(text) => setForm({ ...form, water_intake: text })}
+        keyboardType="numeric"
+        placeholder="e.g., 8"
+        accessibilityLabel="Water Intake Input"
+      />
+
+      <Text style={styles.label}>Pain Level (0-10):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.pain_level}
+        onChangeText={(text) => setForm({ ...form, pain_level: text })}
+        keyboardType="numeric"
+        placeholder="0 (none) to 10 (severe)"
+        accessibilityLabel="Pain Level Input"
+      />
+
+      <Text style={styles.label}>Stress Level (1-10):</Text>
+      <TextInput
+        style={styles.input}
+        value={form.stress_level}
+        onChangeText={(text) => setForm({ ...form, stress_level: text })}
+        keyboardType="numeric"
+        placeholder="1 (low) to 10 (high)"
+        accessibilityLabel="Stress Level Input"
+      />
+
+      <Text style={styles.label}>Mood:</Text>
+      <Picker
+        selectedValue={form.mood}
+        style={styles.picker}
+        onValueChange={(itemValue) => setForm({ ...form, mood: itemValue })}
+      >
+        <Picker.Item label="Sad" value="Sad" />
+        <Picker.Item label="Neutral" value="Neutral" />
+        <Picker.Item label="Happy" value="Happy" />
+        <Picker.Item label="Irritated" value="Irritated" />
+      </Picker>
+
+      <Text style={styles.label}>Meals Logged:</Text>
+      <TextInput
+        style={styles.input}
+        value={form.meals_logged}
+        onChangeText={(text) => setForm({ ...form, meals_logged: text })}
+        keyboardType="numeric"
+        placeholder="e.g., 3"
+        accessibilityLabel="Meals Logged Input"
+      />
+
+      <Text style={styles.label}>Breastfeeding Done Today?</Text>
+      <Picker
+        selectedValue={form.breastfeeding_done}
+        style={styles.picker}
+        onValueChange={(itemValue) => setForm({ ...form, breastfeeding_done: itemValue })}
+      >
+        <Picker.Item label="No" value="No" />
+        <Picker.Item label="Yes" value="Yes" />
+      </Picker>
+
+      <Button
+        title="Calculate Wellness Score"
+        onPress={predictWellness}
+        color="#4CAF50"
+        accessibilityLabel="Calculate Wellness Score Button"
+      />
+
+      {result && (
+        <View style={styles.resultContainer}>
+          <Text style={styles.resultText}>Wellness Score: {result.wellness_score}/100</Text>
+          <Text style={styles.feedbackText}>{result.message}</Text>
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Sleep Schedule</Text>
-        <View style={styles.sleepCard}>
-          <View style={styles.sleepHeader}>
-            <MaterialCommunityIcons name="sleep" size={24} color="#7C3AED" />
-            <Text style={styles.sleepTitle}>Next Nap</Text>
-          </View>
-          <Text style={styles.sleepTime}>1:00 PM - 3:00 PM</Text>
-          <View style={styles.sleepStats}>
-            <Text style={styles.sleepStat}>Duration: 2 hours</Text>
-            <Text style={styles.sleepStat}>Quality: Good</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Activities</Text>
-        <TouchableOpacity style={styles.activityCard}>
-          <MaterialCommunityIcons name="yoga" size={24} color="#7C3AED" />
-          <View style={styles.activityContent}>
-            <Text style={styles.activityTitle}>Tummy Time</Text>
-            <Text style={styles.activityTime}>4:00 PM</Text>
-          </View>
-          <MaterialCommunityIcons name="chevron-right" size={24} color="#6B7280" />
-        </TouchableOpacity>
-      </View>
+      )}
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
   },
-  dateHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+  label: {
+    fontSize: 16,
+    marginTop: 10,
+    fontWeight: 'bold',
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 5,
+    marginBottom: 10,
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
   },
-  dateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
+  picker: {
+    height: 50,
+    width: '100%',
+    marginTop: 5,
+    marginBottom: 10,
   },
-  section: {
-    padding: 16,
+  resultContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#e8f5e9',
+    borderRadius: 5,
   },
-  sectionTitle: {
+  resultText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 12,
+    color: '#2e7d32',
   },
-  timelineContainer: {
-    marginTop: 8,
-  },
-  timelineItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  timeColumn: {
-    width: 80,
-    alignItems: 'center',
-  },
-  timeText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  contentColumn: {
-    flex: 1,
-  },
-  eventCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  eventText: {
+  feedbackText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#1F2937',
-    marginLeft: 12,
-  },
-  eventDetails: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginLeft: 'auto',
-  },
-  sleepCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sleepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  sleepTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginLeft: 12,
-  },
-  sleepTime: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#7C3AED',
-    marginBottom: 8,
-  },
-  sleepStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  sleepStat: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  activityCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  activityContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  activityTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1F2937',
-  },
-  activityTime: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
+    marginTop: 5,
+    color: '#333',
   },
 });
+
+export default PredictScreen;
