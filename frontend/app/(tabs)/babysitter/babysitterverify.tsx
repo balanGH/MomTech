@@ -30,8 +30,10 @@ export default function BabysitterVerificationScreen() {
   
   const checkVerificationStatus = async (email) => {
     try {
-      const response = await apiClient.get(`/babysitters/check-verification?email=${email}`);
-      if (response.status === 200 && response.data.verified) {
+      const response = await fetch(`http://10.11.155.214:5000/babysitters/check-verification?email=${user_email}`);
+      console.log('Response:', response);
+      const result = await response.json();
+      if (response.ok && result.verified) {
         setIsVerified(true);
       }
     } catch (error) {
