@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { bookBabysitter } from '../babysitter/api/api';
+import { bookBabysitter } from '@/api/api';
 
 const colors = {
   primary: "#6d28d9",

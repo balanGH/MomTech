@@ -54,7 +54,7 @@ const BabySitterDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const navigateTo = (screen: string, params?: any) => {
-    router.push({ pathname: `/(tabs)/components/${screen}`, params });
+    router.push({ pathname: `/(tabs)/components/babysitter/${screen}`, params });
   };
 
   const fetchBookings = async () => {

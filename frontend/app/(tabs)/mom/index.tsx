@@ -100,7 +100,7 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Appointments</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/babysitter/nutrienttracker')}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -130,7 +130,7 @@ export default function HomeScreen() {
             user_email === 'admin@momtech.in' ? (
               <Text
                 style={styles.sectionTitle}
-                onPress={() => router.push('../components/AdminAddEventScreen')}
+                onPress={() => router.push('../components/babysitter/AdminAddEventScreen')}
               >
                 Upcoming Events
               </Text>

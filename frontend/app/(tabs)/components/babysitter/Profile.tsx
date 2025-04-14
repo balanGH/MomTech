@@ -77,20 +77,20 @@ const Profile = () => {
   const navigateTo = (screen: string) => {
     switch(screen) {
       case 'BabysitterReviews':
-        router.push('/(tabs)/components/BabysitterReviews');
+        router.push('/(tabs)/components/babysitter/BabysitterReviews');
         break;
       case 'babysitterverify':
-        router.push('/(tabs)/components/babysitterverify');
+        router.push('/(tabs)/components/babysitter/babysitterverify');
         break;
       case 'SettingScreen':
-        router.push('/(tabs)/components/SettingScreen');
+        router.push('/(tabs)/components/babysitter/SettingScreen');
         break;
       default:
-        router.push('/(tabs)/components/BabysitterDashboard');
+        router.push('/(tabs)/components/babysitter/BabysitterDashboard');
       }
   };
 
-  const image = Asset.fromModule(require('../babysitter/assets/images/MomTech_Image.png')).uri;
+  const image = Asset.fromModule(require('../../babysitter/assets/images/MomTech_Image.png')).uri;
 
   return (
     <ScrollView style={styles.container}>

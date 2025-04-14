@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getBabysitterBookings } from '../babysitter/api/api';
+import { getBabysitterBookings } from '@/api/api';
 
 const colors = {
   primary: "#6d28d9",

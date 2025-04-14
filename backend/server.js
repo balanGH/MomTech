@@ -8,7 +8,9 @@ const momRoutes = require('./routes/momRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const babysitterRoutes = require('./routes/babysitterRoutes');
 const adminRoutes = require('./routes/admin');
-
+const Booking = require('./models/Booking');
+const User = require('./models/Users');
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,9 +25,20 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
+
 app.use('/mom',momRoutes);
+
 app.use('/upload', uploadRoutes);
 app.use('/babysitters', babysitterRoutes);
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/availability', require('./routes/availabilityRoutes'));
+app.use('/api/settings', require('./routes/settingsRoutes'));
+app.use('/api', require('./routes/paymentRoutes'));
+app.use('/api/contactMessage', require('./routes/contactRoutes'));
+app.use('/uploads', express.static('uploads')); 
+app.use('/api/contact', contactRoutes);
+app.use('/api/reviews', require('./routes/reviews'));
+
 app.use('/admin', adminRoutes);
 
 // Start Server

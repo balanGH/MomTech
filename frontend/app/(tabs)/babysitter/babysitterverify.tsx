@@ -18,42 +18,47 @@ export default function BabysitterVerificationScreen() {
 
   useEffect(() => {
     const fetchEmail = async () => {
-      const email = await AsyncStorage.getItem('email');
-      setUserEmail(email);
-      if (email) {
-        checkVerificationStatus(email);
+      try {
+        const email = await AsyncStorage.getItem('email');
+        if (email) {
+          setUserEmail(email);
+          checkVerificationStatus(email);
+        }
+      } catch (error) {
+        console.error('Error fetching email:', error);
       }
     };
-  
+
     fetchEmail();
   }, []);
-  
+
   const checkVerificationStatus = async (email) => {
     try {
-      const response = await fetch(`http://10.11.155.214:5000/babysitters/check-verification?email=${user_email}`);
-      console.log('Response:', response);
-      const result = await response.json();
-      if (response.ok && result.verified) {
+      const response = await apiClient.get(`/babysitters/check-verification?email=${email}`);
+      console.log('Response:', response.data);
+
+      if (response.status === 200 && response.data.isVerified) {
         setIsVerified(true);
       }
     } catch (error) {
       console.error('Error fetching verification status:', error);
     }
   };
-  
 
   const pickDocument = async (type) => {
     if (isVerified) return;
 
-    let result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
 
-    if (result.type !== 'cancel' && result.assets && result.assets[0]) {
-      const file = result.assets[0];
-
-      setDocuments((prev) => ({
-        ...prev,
-        [type]: { name: file.name, uri: file.uri },
-      }));
+      if (result.type !== 'cancel') {
+        setDocuments((prev) => ({
+          ...prev,
+          [type]: { name: result.name, uri: result.uri },
+        }));
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
     }
   };
 
@@ -96,9 +101,9 @@ export default function BabysitterVerificationScreen() {
 
     try {
       const response = await apiClient.post('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (response.status === 200) {

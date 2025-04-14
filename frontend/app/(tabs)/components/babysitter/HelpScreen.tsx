@@ -85,7 +85,7 @@ const HelpScreen = () => {
     item.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const image = Asset.fromModule(require('../babysitter/assets/images/MomTech_Image.png')).uri;
+  const image = Asset.fromModule(require('../../babysitter/assets/images/MomTech_Image.png')).uri;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

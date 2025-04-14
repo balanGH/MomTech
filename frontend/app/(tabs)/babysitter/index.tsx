@@ -203,19 +203,19 @@ export default function Home() {
   const buttons = [
     { 
       title: "Babysitter Dashboard", 
-      route: "/components/BabySitterDashboard",
+      route: "/components/babysitter/BabySitterDashboard",
       icon: <FontAwesome5 name="user-nurse" size={20} color="white" />,
       primary: true
     },
     { 
       title: "Emergency Protocols", 
-      route: "/components/EmergencyProtocolsScreen",
+      route: "/components/babysitter/EmergencyProtocolsScreen",
       icon: <Ionicons name="warning" size={20} color="white" />,
       emergency: true
     },
     { 
       title: "Parent Resources", 
-      route: "/components/ParentResources",
+      route: "/components/babysitter/ParentResources",
       icon: <MaterialIcons name="family-restroom" size={20} color="white" />,
       secondary: true
     }

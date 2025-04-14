@@ -1,6 +1,6 @@
 // context/AuthContext.tsx
 import React, { createContext, useContext, useState } from 'react';
-import { authAPI } from '../api/api';
+import { authAPI } from '@/api/api';
 
 interface AuthContextType {
   user: any;

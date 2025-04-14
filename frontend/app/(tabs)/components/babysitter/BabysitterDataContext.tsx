@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { getBabysitterBookings } from '../babysitter/api/api';
+import { getBabysitterBookings } from '@/api/api';
 
 interface Booking {
   _id: string;
