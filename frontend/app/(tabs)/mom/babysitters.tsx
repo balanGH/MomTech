@@ -1,51 +1,100 @@
-import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
-
-const SAMPLE_BABYSITTERS = [
-  {
-    id: '1',
-    name: 'Emma Wilson',
-    age: 28,
-    experience: '5 years',
-    rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    specialties: ['First Aid Certified', 'Early Education'],
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    age: 32,
-    experience: '7 years',
-    rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    specialties: ['Special Needs Care', 'Multilingual'],
-  },
-];
+import apiClient from '@/api/base_api';
 
 export default function BabysittersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [babysitters, setBabysitters] = useState([]);
+  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const today = new Date();
 
-  const renderBabysitter = ({ item }) => (
-    <TouchableOpacity style={styles.babysitterCard}>
-      <Image source={{ uri: item.image }} style={styles.babysitterImage} />
-      <View style={styles.babysitterInfo}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.experience}>{item.experience} experience</Text>
-        <View style={styles.ratingContainer}>
-          <MaterialCommunityIcons name="star" size={16} color="#F59E0B" />
-          <Text style={styles.rating}>{item.rating}</Text>
+  useEffect(() => {
+    const fetchBabysitters = async () => {
+      try {
+        const response = await apiClient.get('/mom/babysitters_search');
+        const data = response.data;
+        console.log('Fetched Babysitters:', data);
+        setBabysitters(data);
+      } catch (err) {
+        console.error('Error fetching babysitters:', err);
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBabysitters();
+  }, []);
+
+  const handleBookingRequest = (babysitter) => {
+    Alert.alert(
+      'Booking Request',
+      `You are requesting to book ${babysitter.name}.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Send Request', onPress: () => console.log('Booking request sent!') }
+      ]
+    );
+  };
+
+  const renderBabysitter = ({ item }) => {
+    const createdAtDate = new Date(item.created_at);
+    const experienceYears = today.getFullYear() - createdAtDate.getFullYear();
+
+    return (
+      <TouchableOpacity style={styles.babysitterCard}>
+        <Image source={{ uri: item.profile_pic || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' }} style={styles.babysitterImage} />
+        <View style={styles.babysitterInfo}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.experience}>
+            {experienceYears > 0 ? `${experienceYears} years` : 'Less than a year'} experience
+          </Text>
+          <View style={styles.ratingContainer}>
+            <MaterialCommunityIcons name="star" size={16} color="#F59E0B" />
+            <Text style={styles.rating}>{item.rating || 'N/A'}</Text>
+            <Text style={styles.fare}> Fare : ₹{item.fare || 0} /Hr</Text>
+          </View>
+          <Text style={styles.experience}>Available: {item.available ? 'Yes' : 'No'}</Text>
+          <View style={styles.specialtiesContainer}>
+            {item.specialties && item.specialties.length > 0
+              ? item.specialties.map((specialty, index) => (
+                  <View key={index} style={styles.specialtyTag}>
+                    <Text style={styles.specialtyText}>{specialty}</Text>
+                  </View>
+                ))
+              : <Text>No specialties listed</Text>}
+          </View>
+
+          <TouchableOpacity 
+            style={styles.bookButton} 
+            onPress={() => handleBookingRequest(item)}
+          >
+            <Text style={styles.bookButtonText}>Ask to Book</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.specialtiesContainer}>
-          {item.specialties.map((specialty, index) => (
-            <View key={index} style={styles.specialtyTag}>
-              <Text style={styles.specialtyText}>{specialty}</Text>
-            </View>
-          ))}
-        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: 'center', marginTop: 20 }}>Loading babysitters...</Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: 'red', textAlign: 'center', marginTop: 20 }}>
+          Failed to load babysitters. Please try again later.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -59,21 +108,12 @@ export default function BabysittersScreen() {
         />
       </View>
 
-      <View style={styles.filtersContainer}>
-        <TouchableOpacity style={styles.filterButton}>
-          <MaterialCommunityIcons name="filter-variant" size={20} color="#7C3AED" />
-          <Text style={styles.filterText}>Filters</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterChip}>
-          <Text style={styles.chipText}>First Aid Certified</Text>
-          <MaterialCommunityIcons name="close" size={16} color="#6B7280" />
-        </TouchableOpacity>
-      </View>
-
       <FlatList
-        data={SAMPLE_BABYSITTERS}
+        data={babysitters.filter(babysitter =>
+          babysitter.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )}
         renderItem={renderBabysitter}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContainer}
       />
     </View>
@@ -105,43 +145,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-  },
-  filtersContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  filterText: {
-    marginLeft: 4,
-    color: '#7C3AED',
-    fontWeight: '500',
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EDE9FE',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  chipText: {
-    color: '#7C3AED',
-    marginRight: 4,
   },
   listContainer: {
     padding: 16,
@@ -187,6 +190,11 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     fontWeight: '500',
   },
+  fare: {
+    marginLeft: 14,
+    color: '#000000',
+    fontWeight: '500',
+  },
   specialtiesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -203,5 +211,18 @@ const styles = StyleSheet.create({
   specialtyText: {
     fontSize: 12,
     color: '#4B5563',
+  },
+  bookButton: {
+    marginTop: 10,
+    backgroundColor: '#2563EB',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

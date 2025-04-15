@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, SafeAreaView, Alert, Platform, ActivityIndicator } from 'react-native';
 import apiClient from '@/api/base_api';
+import Profile from './components/babysitter/Profile';
 
 const Auth = () => {
   const [selectedMode, setSelectedMode] = useState(null);
@@ -14,6 +15,7 @@ const Auth = () => {
     email: '',
     password: '',
     name: '',
+    profile_pic: '',
     phone: '',
     childName: '',
     childDOB: new Date(),
@@ -96,6 +98,7 @@ const Auth = () => {
       email: '',
       password: '',
       name: '',
+      profile_pic: '',
       phone: '',
       childName: '',
       childDOB: new Date(),
@@ -143,6 +146,7 @@ const Auth = () => {
         email: formData.email,
         password: formData.password,
         name: formData.name,
+        profile_pic: formData.profile_pic,
         phone: formData.phone,
         userType: selectedMode,
         ...(!isLogin && selectedMode === 'mom' && {
@@ -242,6 +246,12 @@ const Auth = () => {
               onChangeText={(text) => handleInputChange('name', text)}
             />
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            <TextInput
+              style={[styles.input, errors.profile_pic && styles.errorInput]}
+              placeholder="Profile Image URL"
+              value={formData.profile_pic}
+              onChangeText={(text) => handleInputChange('profile_pic', text)}
+            />
           </>
         )}
 

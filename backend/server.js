@@ -4,7 +4,9 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
+
 const momRoutes = require('./routes/momRoutes');
+
 const uploadRoutes = require('./routes/uploadRoutes');
 const babysitterRoutes = require('./routes/babysitterRoutes');
 const adminRoutes = require('./routes/admin');

@@ -56,6 +56,7 @@ router.post('/register/:userType', async (req, res) => {
     if (userType === 'mom') {
       newUser = new Mom({
         name: userData.name,
+        profile_pic: userData.profile_pic,
         email: userData.email,
         password: userData.password,
         phone: userData.phone,
@@ -76,6 +77,7 @@ router.post('/register/:userType', async (req, res) => {
     } else if (userType === 'babysitter') {
       newUser = new Babysitter({
         name: userData.name,
+        profile_pic: userData.profile_pic,
         email: userData.email,
         password: userData.password,
         fare: userData.fare,

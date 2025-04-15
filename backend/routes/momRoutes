@@ -1,5 +1,6 @@
 const express = require('express');
 const Mom = require('../models/Mom');
+const Babysitter = require('../models/Babysitter');
 
 const router = express.Router();
 
@@ -80,6 +81,15 @@ router.post('/childupdate', async (req, res) => {
   } catch (error) {
     console.error('❌ Error updating health overview:', error.message || error);
     return res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+});
+
+router.get('/babysitters_search', async (req, res) => {
+  try {
+    const babysitters = await Babysitter.find();
+    res.json(babysitters);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch babysitters' });
   }
 });
 

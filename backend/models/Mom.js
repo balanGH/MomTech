@@ -15,6 +15,7 @@ const childSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  profile_pic: { type: String },
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   phone: { type: String },
