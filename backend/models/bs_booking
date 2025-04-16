@@ -1,0 +1,11 @@
+const mongoose = require('mongoose');
+
+const bookings = new mongoose.Schema({
+  mom_email: { type: String, required: true },
+  babysitter_email: { type: String, required: true },
+  booking_date: { type: Date },
+  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+  created_at: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('bookings', bookings);

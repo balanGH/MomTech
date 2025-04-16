@@ -96,11 +96,11 @@ export default function HomeScreen() {
           <MaterialCommunityIcons name="sleep" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Sleep Log</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/mom/bookings')}>
           <MaterialCommunityIcons name="calendar" size={32} color="#7C3AED" />
-          <Text style={styles.actionText}>Appointments</Text>
+          <Text style={styles.actionText}>Bookings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/babysitter/nutrienttracker')}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('../components/nutrienttracker')}>
           <MaterialCommunityIcons name="chart-bar" size={32} color="#7C3AED" />
           <Text style={styles.actionText}>Nutrients Track</Text>
         </TouchableOpacity>
@@ -130,7 +130,7 @@ export default function HomeScreen() {
             user_email === 'admin@momtech.in' ? (
               <Text
                 style={styles.sectionTitle}
-                onPress={() => router.push('../components/babysitter/AdminAddEventScreen')}
+                onPress={() => router.push('../components/AdminAddEventScreen')}
               >
                 Upcoming Events
               </Text>

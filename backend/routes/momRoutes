@@ -1,9 +1,16 @@
 const express = require('express');
 const Mom = require('../models/Mom');
 const Babysitter = require('../models/Babysitter');
+const bs_booking = require('../models/bs_booking');
 
 const router = express.Router();
-
+[
+  {
+    "mom_email": "mom@example.com",
+    "babysitter_email": "babysitter1@example.com",
+    "booking_date": "2025-04-20"
+  }
+]
 router.get('/mom', async (req, res) => {
   try {
     const userEmail = req.query.email;
@@ -90,6 +97,87 @@ router.get('/babysitters_search', async (req, res) => {
     res.json(babysitters);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch babysitters' });
+  }
+});
+
+router.get('/bookings', async (req, res) => {
+  try {
+    const { mom_email } = req.query;
+
+    if (!mom_email) {
+      return res.status(400).json({ error: 'Mom email is required to fetch bookings.' });
+    }
+
+    // Fetch bookings
+    const bookings = await bs_booking.find({ mom_email }).lean();
+
+    if (!bookings.length) {
+      return res.status(404).json({ error: 'No bookings found for the provided mom email.' });
+    }
+
+    // Fetch babysitter details for each booking
+    const babysitterEmails = bookings.map((booking) => booking.babysitter_email);
+    const babysitters = await Babysitter.find({ email: { $in: babysitterEmails } }).lean();
+
+    // Map babysitter details to their email for quick lookup
+    const babysitterMap = babysitters.reduce((map, babysitter) => {
+      map[babysitter.email] = babysitter;
+      return map;
+    }, {});
+
+    // Merge babysitter details into bookings
+    const enrichedBookings = bookings.map((booking) => ({
+      ...booking,
+      babysitter_details: babysitterMap[booking.babysitter_email] || null, // Add babysitter details or null if not found
+    }));
+
+    return res.status(200).json({ bookings: enrichedBookings });
+  } catch (error) {
+    console.error('❌ Error fetching bookings:', error.message || error);
+    return res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+});
+
+router.post('/book_babysitter', async (req, res) => {
+  try {
+    const { mom_email, babysitter_email, booking_date } = req.body;
+    console.log('Booking request:', req.body);
+
+    if (!mom_email || !babysitter_email || !booking_date) {
+      return res.status(400).json({ error: 'Mom email, babysitter email, and booking date are required.' });
+    }
+
+    const bookingDate = new Date(booking_date);
+    if (isNaN(bookingDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid booking date format.' });
+    }
+
+    const normalizedDate = bookingDate.toISOString().split('T')[0];
+
+    const existingBooking = await bs_booking.findOne({
+      mom_email,
+      babysitter_email,
+      booking_date: normalizedDate,
+    });
+
+    if (existingBooking) {
+      return res.status(409).json({ error: 'Booking already exists for the given mom, babysitter, and date.' });
+    }
+
+    const newBooking = new bs_booking({
+      mom_email,
+      babysitter_email,
+      booking_date: normalizedDate,
+    });
+
+    await newBooking.save();
+    return res.status(201).json({ message: 'Booking created successfully!' });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ error: 'Duplicate booking detected.' });
+    }
+    console.error('❌ Error creating booking:', error.message || error);
+    return res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
   }
 });
 
