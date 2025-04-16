@@ -92,16 +92,16 @@ const MomBookings: React.FC = () => {
             <View style={styles.row}>
               <Image
                 source={{
-                  uri: item.babysitter_details.profile_pic || 'https://via.placeholder.com/50',
+                  uri: item.babysitter_details?.profile_pic || 'https://raw.githubusercontent.com/balanGH/MomTech/refs/heads/main/frontend/assets/images/icon.png',
                 }}
                 style={styles.profilePic}
               />
               <View>
                 <Text style={styles.babysitterName}>
-                  {item.babysitter_details.name}
+                  {item.babysitter_details?.name || 'Unknown'}
                 </Text>
                 <Text style={styles.fare}>
-                  Fare: ₹{item.babysitter_details.fare} /hr
+                  Fare: ₹{item.babysitter_details?.fare || 'N/A'} /hr
                 </Text>
               </View>
             </View>

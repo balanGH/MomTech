@@ -89,7 +89,7 @@ export default function BabysittersScreen() {
         <Text style={styles.name}>{item.name}</Text>
         <View style={styles.ratingContainer}>
           <MaterialCommunityIcons name="star" size={16} color="#F59E0B" />
-          <Text style={styles.rating}>{item.rating || 'N/A'}</Text>
+          <Text style={styles.rating}>{item.rating || '0'}</Text>
           <Text style={styles.fare}> Fare : ₹{item.fare || 0} /Hr</Text>
         </View>
         <Text style={styles.experience}>Available: {item.available ? 'Yes' : 'No'}</Text>
@@ -232,5 +232,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 14,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    padding: 4,
+    borderRadius: 8,
+  },
+  rating: {
+    marginLeft: 4,
+    fontWeight: '600',
+    color: '#F59E0B', // Gold color for the rating text
+    fontSize: 14,
+  },
+  fare: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#6B7280', // Gray color for the fare text
   },
 });
