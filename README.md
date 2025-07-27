@@ -4,7 +4,7 @@
 
 ---
 
-# 👶 Smart Babysitting and Baby Care Support System for New Moms
+# Smart Babysitting and Baby Care Support System for New Moms
 
 A comprehensive React Native + Node.js + MongoDB-based mobile application designed to assist new mothers with essential tools for baby care. This system integrates babysitter booking, child health tracking, AI chatbot support, personalized event reminders, and more — all in one user-friendly platform.
 
