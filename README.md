@@ -9,7 +9,7 @@ A comprehensive React Native + Node.js + MongoDB-based mobile application design
 
 ## 📱 Features
 
-### ✅ For Moms:
+### For Moms:
 - **Babysitter Search & Booking**
   - View and filter babysitters by availability, fare, experience, specialties, and rating.
   - Request appointments with a single tap.
@@ -32,16 +32,16 @@ A comprehensive React Native + Node.js + MongoDB-based mobile application design
 
 ### For Babysitters
 - ** Certificate Verification (PDF Text Extraction)**  
-  Upload training certificates (CPR, First Aid, Babysitting, etc.) which are automatically verified for eligibility.
+  - Upload training certificates (CPR, First Aid, Babysitting, etc.) which are automatically verified for eligibility.
 
 - ** Availability & Specialty Setting**  
-  Set working hours, supported locations, and services (e.g., newborn care, special needs).
+  - Set working hours, supported locations, and services (e.g., newborn care, special needs).
 
 - ** Earnings and Rating Dashboard**  
-  Track total hours, earnings, feedback from moms, and manage your own profile.
+  - Track total hours, earnings, feedback from moms, and manage your own profile.
 
 - ** Emergency Protocol System**  
-  Quick-call system for emergency contacts and moms, including first aid guidelines and panic button.
+  - Quick-call system for emergency contacts and moms, including first aid guidelines and panic button.
 
 ---
 
