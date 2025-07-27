@@ -1,10 +1,7 @@
-*MomTech*
+#MomTech
 ---
+
 *Smart Babysitting and Baby Care Support System for New Moms*
-
----
-
-# Smart Babysitting and Baby Care Support System for New Moms
 
 A comprehensive React Native + Node.js + MongoDB-based mobile application designed to assist new mothers with essential tools for baby care. This system integrates babysitter booking, child health tracking, AI chatbot support, personalized event reminders, and more — all in one user-friendly platform.
 
@@ -149,13 +146,6 @@ This project is for educational purposes. Feel free to extend it and adapt it to
 
 ## 🙌 Acknowledgments
 
-* Developed by Boobalan P. and team
-* Guided by faculty from the College of Engineering Guindy
-* Special thanks to everyone who tested and contributed ideas
-
-```
-
----
-
-Let me know if you'd like this turned into a styled GitHub README with badges, screenshots, or demo video embedding!
-```
+* Developed by: [balnGH](https://github.com/balnGH), [lashmie](https://github.com/lashmie), [vivamuss](https://github.com/vivamuss)
+* Guided by faculty at College of Engineering, Guindy
+* Thanks to all testers and contributors
