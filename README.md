@@ -159,6 +159,6 @@ This project is for educational purposes. Feel free to extend it and adapt it to
 
 ## 🙌 Acknowledgments
 
-* Developed by: [balnGH](https://github.com/balnGH), [lashmie](https://github.com/lashmie), [vivamuss](https://github.com/vivamuss)
+* Developed by: [balanGH](https://github.com/balanGH), [lashmie](https://github.com/lashmie), [vivamuss](https://github.com/vivamuss)
 * Guided by faculty at College of Engineering, Guindy
 * Thanks to all testers and contributors
